@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDSS - Breast Cancer Detection System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- NAVIGATION BAR -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="nav-logo">
+                <div class="logo-icon">+</div>
+                <div>
+                    <span class="logo-title">MDSS</span>
+                    <span class="logo-sub">Medical Decision Support System</span>
+                </div>
+            </div>
+        </div>
+        <div class="nav-right">
+            <span class="nav-badge">AAUA · CSC Department</span>
+            <span class="nav-badge">Subgroup 3</span>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-tag">AI-Powered · Explainable · Clinically Deployable</div>
+            <h1 class="hero-title">Breast Cancer<br><span class="hero-accent">Detection System</span></h1>
+            <p class="hero-desc">A hybrid CNN-SVM model integrated within a Medical Decision Support System for enhanced, explainable breast cancer detection — designed for Nigerian healthcare settings.</p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-num">2.35M</span>
+                    <span class="stat-label">New cases annually</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-num">CNN + SVM</span>
+                    <span class="stat-label">Hybrid AI Model</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-num">Grad-CAM</span>
+                    <span class="stat-label">Visual Explanation</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN FORM SECTION -->
+    <section class="form-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>New Patient Analysis</h2>
+                <p>Upload a mammogram image and enter the patient clinical data to run the AI analysis.</p>
+            </div>
+
+            <form action="/predict" method="POST" enctype="multipart/form-data" id="analysisForm">
+                <div class="form-grid">
+
+                    <!-- LEFT: Image Upload -->
+                    <div class="form-card">
+                        <div class="card-header">
+                            <div class="card-icon">🩻</div>
+                            <div>
+                                <h3>Mammogram Image</h3>
+                                <p>Upload the patient's mammogram scan</p>
+                            </div>
+                        </div>
+
+                        <div class="upload-area" id="uploadArea">
+                            <input type="file" name="image" id="imageInput" accept="image/*" required hidden>
+                            <div class="upload-placeholder" id="uploadPlaceholder">
+                                <div class="upload-icon">📂</div>
+                                <p class="upload-title">Click to upload mammogram</p>
+                                <p class="upload-sub">Supports JPEG, PNG, DICOM formats</p>
+                                <button type="button" class="btn-upload" onclick="document.getElementById('imageInput').click()">Choose File</button>
+                            </div>
+                            <div class="upload-preview" id="uploadPreview" style="display:none;">
+                                <img id="previewImg" src="" alt="Mammogram Preview">
+                                <div class="preview-info">
+                                    <span id="fileName">No file selected</span>
+                                    <button type="button" class="btn-change" onclick="document.getElementById('imageInput').click()">Change</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Clinical Data -->
+                    <div class="form-card">
+                        <div class="card-header">
+                            <div class="card-icon">📋</div>
+                            <div>
+                                <h3>Patient Clinical Data</h3>
+                                <p>Enter the patient's clinical information</p>
+                            </div>
+                        </div>
+
+                        <div class="fields">
+
+                            <div class="field-row">
+                                <div class="field">
+                                    <label>Patient Age <span class="required">*</span></label>
+                                    <input type="number" name="age" placeholder="e.g. 45" min="18" max="100" required>
+                                </div>
+                                <div class="field">
+                                    <label>BI-RADS Category <span class="required">*</span></label>
+                                    <select name="birads" required>
+                                        <option value="" disabled selected>Select category</option>
+                                        <option value="1">Category 1 - Negative</option>
+                                        <option value="2">Category 2 - Benign</option>
+                                        <option value="3">Category 3 - Probably Benign</option>
+                                        <option value="4">Category 4 - Suspicious</option>
+                                        <option value="5">Category 5 - Highly Suspicious</option>
+                                        <option value="6">Category 6 - Known Malignancy</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="field-row">
+                                <div class="field">
+                                    <label>Family History of Breast Cancer</label>
+                                    <select name="family_history">
+                                        <option value="0">No</option>
+                                        <option value="1">Yes</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Breast Density</label>
+                                    <select name="density">
+                                        <option value="1">Type A - Almost entirely fatty</option>
+                                        <option value="2">Type B - Scattered density</option>
+                                        <option value="3">Type C - Heterogeneously dense</option>
+                                        <option value="4">Type D - Extremely dense</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="field-row">
+                                <div class="field">
+                                    <label>Menopausal Status</label>
+                                    <select name="menopause">
+                                        <option value="0">Pre-menopausal</option>
+                                        <option value="1">Post-menopausal</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Prior Biopsy</label>
+                                    <select name="prior_biopsy">
+                                        <option value="0">No</option>
+                                        <option value="1">Yes</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label>Additional Clinical Notes</label>
+                                <textarea name="notes" placeholder="Enter any additional clinical observations or notes here..." rows="3"></textarea>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- SUBMIT BUTTON -->
+                <div class="submit-area">
+                    <button type="submit" class="btn-analyse" id="submitBtn">
+                        <span class="btn-icon">🔬</span>
+                        <span class="btn-text">Run AI Analysis</span>
+                    </button>
+                    <p class="submit-note">The system will analyse the mammogram and clinical data using the hybrid CNN-SVM model and generate an explainable report.</p>
+                </div>
+
+            </form>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS SECTION -->
+    <section class="how-section">
+        <div class="container">
+            <h2 class="section-title">How the System Works</h2>
+            <div class="steps-grid">
+                <div class="step">
+                    <div class="step-num">01</div>
+                    <div class="step-icon">📤</div>
+                    <h4>Upload & Input</h4>
+                    <p>Upload the mammogram image and enter the patient clinical data including age, BI-RADS score, and family history.</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-num">02</div>
+                    <div class="step-icon">🧠</div>
+                    <h4>CNN Feature Extraction</h4>
+                    <p>The VGG16 Convolutional Neural Network automatically extracts hierarchical features from the mammogram image.</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-num">03</div>
+                    <div class="step-icon">⚖️</div>
+                    <h4>SVM Classification</h4>
+                    <p>The Support Vector Machine classifies the case as Benign or Malignant using both image features and clinical data.</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-num">04</div>
+                    <div class="step-icon">📊</div>
+                    <h4>Explainable Report</h4>
+                    <p>Grad-CAM highlights suspicious image regions and SHAP values explain which clinical factors influenced the decision.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>MDSS — Hybrid AI Model for Breast Cancer Detection</p>
+            <p>Developed by Subgroup 3 · AAUA Faculty of Computing · CSC Department · Supervised by Dr. Ogbeide</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+</html>

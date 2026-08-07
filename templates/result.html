@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results - MDSS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- NAVIGATION BAR -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="nav-logo">
+                <div class="logo-icon">+</div>
+                <div>
+                    <span class="logo-title">MDSS</span>
+                    <span class="logo-sub">Medical Decision Support System</span>
+                </div>
+            </div>
+        </div>
+        <div class="nav-right">
+            <span class="nav-badge">AAUA · CSC Department</span>
+            <span class="nav-badge">Subgroup 3</span>
+        </div>
+    </nav>
+
+    <!-- RESULT HERO -->
+    <section class="result-hero">
+        <div class="result-hero-content">
+            <div>
+                <div class="result-title">Analysis Complete</div>
+                <div class="result-sub">Patient Age: {{ age }} · BI-RADS: Category {{ birads }} · {{ timestamp }}</div>
+            </div>
+            <div class="result-badge {{ prediction_class }}">
+                {{ prediction }} — {{ confidence }}% Confidence
+            </div>
+        </div>
+    </section>
+
+    <!-- RESULTS SECTION -->
+    <section class="result-section">
+        <div class="container">
+
+            <!-- ROW 1: Prediction + Risk Score -->
+            <div class="results-grid">
+
+                <!-- Prediction Card -->
+                <div class="result-card">
+                    <div class="result-card-title">AI Prediction</div>
+                    <div class="prediction-value {{ prediction_class }}">{{ prediction }}</div>
+                    <div class="confidence-label">Model Confidence</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" data-width="{{ confidence }}" style="width: 0%"></div>
+                    </div>
+                    <div class="confidence-label">{{ confidence }}%</div>
+
+                    <br>
+                    <div style="font-size: 13px; color: #475569; line-height: 1.7;">
+                        <strong>Model Used:</strong> Hybrid CNN-SVM<br>
+                        <strong>Feature Extraction:</strong> VGG16 (512-dim vector)<br>
+                        <strong>Classifier:</strong> Support Vector Machine (RBF Kernel)<br>
+                        <strong>Data Fusion:</strong> Image + Clinical Features
+                    </div>
+                </div>
+
+                <!-- Risk Score Card -->
+                <div class="result-card">
+                    <div class="result-card-title">Risk Assessment</div>
+                    <div class="risk-tiers">
+                        <div class="risk-tier low {{ 'active' if risk_level == 'LOW' else '' }}">
+                            LOW<br><span style="font-size:10px;font-weight:400">Below 30%</span>
+                        </div>
+                        <div class="risk-tier medium {{ 'active' if risk_level == 'INTERMEDIATE' else '' }}">
+                            MEDIUM<br><span style="font-size:10px;font-weight:400">30% - 70%</span>
+                        </div>
+                        <div class="risk-tier high {{ 'active' if risk_level == 'HIGH' else '' }}">
+                            HIGH<br><span style="font-size:10px;font-weight:400">Above 70%</span>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 24px; font-weight: 700; color: {{ risk_color }}; margin: 12px 0 6px;">
+                        {{ risk_level }} RISK
+                    </div>
+                    <div style="font-size: 13px; color: #475569; margin-bottom: 14px;">
+                        Risk Score: {{ risk_score }}%
+                    </div>
+
+                    <div class="risk-action">
+                        <strong>Recommended Action:</strong><br>
+                        {{ recommendation }}
+                    </div>
+
+                    <br>
+                    <div style="font-size: 12px; color: #94A3B8; line-height: 1.6;">
+                        Risk score is computed by combining the model malignancy probability with BI-RADS category, patient age, family history, and breast density using a weighted clinical formula.
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ROW 2: Grad-CAM + SHAP -->
+            <div class="results-grid">
+
+                <!-- Grad-CAM Heatmap Card -->
+                <div class="result-card">
+                    <div class="result-card-title">Grad-CAM Visual Explanation</div>
+                    <img
+                        src="{{ url_for('static', filename='uploads/' + heatmap_filename) }}"
+                        alt="Grad-CAM Heatmap"
+                        class="heatmap-img"
+                    >
+                    <div class="heatmap-note">
+                        🔴 Red/orange regions indicate areas the CNN focused on most when making its prediction. These highlight the suspicious lesion or mass in the mammogram.
+                    </div>
+                    <br>
+                    <div style="font-size: 12px; color: #94A3B8; line-height: 1.6;">
+                        <strong>Method:</strong> Gradient-weighted Class Activation Mapping (Grad-CAM) computes the gradient of the class score with respect to the last convolutional layer of the VGG16 network to produce this heatmap.
+                    </div>
+                </div>
+
+                <!-- SHAP Values Card -->
+                <div class="result-card">
+                    <div class="result-card-title">SHAP Feature Importance</div>
+                    <div style="font-size: 13px; color: #475569; margin-bottom: 18px;">
+                        The chart below shows how much each clinical factor contributed to the prediction. Higher values mean greater influence on the result.
+                    </div>
+
+                    {% for feature in shap_features %}
+                    <div class="shap-bar-item">
+                        <div class="shap-label">{{ feature.name }}</div>
+                        <div class="shap-bar-track">
+                            <div class="shap-bar-fill" data-width="{{ feature.percentage }}" style="width: 0%"></div>
+                        </div>
+                        <div class="shap-val">{{ feature.value }}</div>
+                    </div>
+                    {% endfor %}
+
+                    <br>
+                    <div style="font-size: 12px; color: #94A3B8; line-height: 1.6;">
+                        <strong>Method:</strong> SHapley Additive Explanations (SHAP) uses game theory principles to assign each clinical feature a contribution score, showing both positive (↑ risk) and negative (↓ risk) influences on the final prediction.
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ROW 3: Clinical Summary -->
+            <div class="result-card" style="margin-bottom: 24px;">
+                <div class="result-card-title">Clinical Summary Report</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+
+                    <div>
+                        <div style="font-size: 12px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Patient Information</div>
+                        <div style="font-size: 14px; color: #1E293B; line-height: 2;">
+                            <strong>Age:</strong> {{ age }} years<br>
+                            <strong>BI-RADS:</strong> Category {{ birads }}<br>
+                            <strong>Family History:</strong> {{ family_history }}<br>
+                            <strong>Breast Density:</strong> Type {{ density }}<br>
+                            <strong>Menopausal Status:</strong> {{ menopause }}<br>
+                            <strong>Prior Biopsy:</strong> {{ prior_biopsy }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="font-size: 12px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">AI Analysis Result</div>
+                        <div style="font-size: 14px; color: #1E293B; line-height: 2;">
+                            <strong>Prediction:</strong> {{ prediction }}<br>
+                            <strong>Confidence:</strong> {{ confidence }}%<br>
+                            <strong>Risk Level:</strong> {{ risk_level }}<br>
+                            <strong>Risk Score:</strong> {{ risk_score }}%<br>
+                            <strong>Model:</strong> Hybrid CNN-SVM<br>
+                            <strong>Date:</strong> {{ timestamp }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="font-size: 12px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Clinical Recommendation</div>
+                        <div style="font-size: 14px; color: #1E293B; line-height: 1.8;">
+                            {{ recommendation }}
+                        </div>
+                        <br>
+                        <div style="font-size: 12px; color: #94A3B8; line-height: 1.6;">
+                            ⚠️ This AI-generated report is intended to support, not replace, clinical judgement. All findings should be reviewed by a qualified healthcare professional.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="actions-bar">
+                <a href="/" class="btn-new">← New Analysis</a>
+                <button class="btn-print" onclick="printReport()">🖨️ Print Report</button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>MDSS — Hybrid AI Model for Breast Cancer Detection</p>
+            <p>Developed by Subgroup 3 · AAUA Faculty of Computing · CSC Department · Supervised by Dr. Ogbeide</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+</html>
