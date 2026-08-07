@@ -150,3 +150,54 @@ window.addEventListener('load', function () {
     animateConfidenceBar();
     animateSHAPBars();
 });
+
+// ── Dark Mode Toggle ──
+// This adds a dark mode button to the website
+// When clicked it switches between light and dark mode
+// and remembers the user's preference
+
+function createDarkModeToggle() {
+    // Create the toggle button
+    const toggle = document.createElement('button');
+    toggle.id = 'darkModeToggle';
+    toggle.innerHTML = '🌙';
+    toggle.title = 'Toggle Dark Mode';
+    toggle.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: none;
+        background: #002060;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 9999;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+
+    document.body.appendChild(toggle);
+
+    // Check if user previously chose dark mode
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+        toggle.innerHTML = '☀️';
+    }
+
+    // Toggle dark mode when button is clicked
+    toggle.addEventListener('click', function () {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('darkMode', isDark);
+        toggle.innerHTML = isDark ? '☀️' : '🌙';
+    });
+}
+
+// Run when page loads
+createDarkModeToggle();

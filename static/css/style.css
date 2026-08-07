@@ -792,3 +792,85 @@ body {
     .nav-right { display: none; }
     .hero-stats { gap: 20px; }
 }
+/* ── Dark Mode ── */
+body.dark-mode {
+    background: #0a0f1e;
+    color: #e2e8f0;
+}
+
+body.dark-mode .form-card {
+    background: #111827;
+    border-color: #1f2937;
+}
+
+body.dark-mode .card-header {
+    border-bottom-color: #1f2937;
+}
+
+body.dark-mode .card-header h3 {
+    color: #e2e8f0;
+}
+
+body.dark-mode .field input,
+body.dark-mode .field select,
+body.dark-mode .field textarea {
+    background: #1f2937;
+    border-color: #374151;
+    color: #e2e8f0;
+}
+
+body.dark-mode .field input:focus,
+body.dark-mode .field select:focus,
+body.dark-mode .field textarea:focus {
+    border-color: #028090;
+    background: #1f2937;
+}
+
+body.dark-mode .upload-area {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+body.dark-mode .upload-title {
+    color: #e2e8f0;
+}
+
+body.dark-mode .section-header h2 {
+    color: #e2e8f0;
+}
+
+body.dark-mode .section-header p {
+    color: #94a3b8;
+}
+
+body.dark-mode .result-card {
+    background: #111827;
+    border-color: #1f2937;
+}
+
+body.dark-mode .result-card-title {
+    color: #94a3b8;
+    border-bottom-color: #1f2937;
+}
+
+body.dark-mode .shap-bar-track {
+    background: #1f2937;
+}
+
+body.dark-mode .confidence-bar {
+    background: #1f2937;
+}
+
+body.dark-mode .risk-action {
+    background: #1f2937;
+    color: #e2e8f0;
+}
+
+body.dark-mode .field label {
+    color: #94a3b8;
+}
+
+body.dark-mode #darkModeToggle {
+    background: #F5A623;
+    color: #002060;
+}
