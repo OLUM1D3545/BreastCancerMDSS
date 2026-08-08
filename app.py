@@ -3,34 +3,55 @@
 # Flask Backend - app.py
 # ═══════════════════════════════════════
 
-# ── Imports ──
-# Flask: the web framework that runs the website
-from flask import Flask, render_template, request, url_for
-# OS: helps us work with files and folders
+from flask import Flask, render_template, request, url_for, send_file
+from flask_sqlalchemy import SQLAlchemy
 import os
-# NumPy: for numerical computations
 import numpy as np
-# Pillow: for opening and processing images
 from PIL import Image
-# DateTime: for timestamping the reports
 from datetime import datetime
-# Matplotlib: for drawing the Grad-CAM heatmap
 import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-from fpdf import FPDF
 import io
-from flask import send_file
+from fpdf import FPDF
 
-# ── Create Flask App ──
 app = Flask(__name__)
 
 # ── Configuration ──
-# This tells Flask where to save uploaded mammogram images
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mdss.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = 'mdss-aaua-subgroup3-secret-key'
+
+# ── Database Setup ──
+db = SQLAlchemy(app)
+
+# Make sure upload folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# ── Database Model ──
+# This is the table that stores every analysis result
+class AnalysisResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.String(100), nullable=False)
+    age = db.Column(db.Integer, nullable=False)
+    birads = db.Column(db.Integer, nullable=False)
+    family_history = db.Column(db.Integer, default=0)
+    density = db.Column(db.Integer, default=2)
+    menopause = db.Column(db.Integer, default=0)
+    prior_biopsy = db.Column(db.Integer, default=0)
+    prediction = db.Column(db.String(20), nullable=False)
+    confidence = db.Column(db.Float, nullable=False)
+    risk_level = db.Column(db.String(20), nullable=False)
+    risk_score = db.Column(db.Float, nullable=False)
+    heatmap_filename = db.Column(db.String(200), nullable=True)
+
+# Create database tables
+with app.app_context():
+    db.create_all()
 
 # Make sure the upload folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -352,6 +373,25 @@ def predict():
 
     timestamp_display = datetime.now().strftime('%d %B %Y, %H:%M')
 
+
+    # ── Save result to database ──
+    new_result = AnalysisResult(
+        timestamp=timestamp_display,
+        age=clinical_features['age'],
+        birads=clinical_features['birads'],
+        family_history=clinical_features['family_history'],
+        density=clinical_features['density'],
+        menopause=clinical_features['menopause'],
+        prior_biopsy=clinical_features['prior_biopsy'],
+        prediction=prediction,
+        confidence=confidence,
+        risk_level=risk_level,
+        risk_score=risk_percentage,
+        heatmap_filename=heatmap_filename
+    )
+    db.session.add(new_result)
+    db.session.commit()
+
     # ── Step 9: Send everything to the result page ──
     return render_template(
         'result.html',
@@ -575,6 +615,36 @@ def download_report():
         as_attachment=True,
         download_name=f'MDSS_Report_{timestamp.replace(" ", "_").replace(",", "")}.pdf'
     )
+
+    @app.route('/dashboard')
+def dashboard():
+    """
+    Shows statistics and history of all analyses.
+    """
+    # Get all results from database
+    all_results = AnalysisResult.query.order_by(
+        AnalysisResult.id.desc()
+    ).all()
+
+    total = len(all_results)
+    malignant = sum(1 for r in all_results if r.prediction == 'MALIGNANT')
+    benign = total - malignant
+    avg_risk = round(sum(r.risk_score for r in all_results) / total, 1) if total > 0 else 0
+    high_risk = sum(1 for r in all_results if r.risk_level == 'HIGH')
+    intermediate_risk = sum(1 for r in all_results if r.risk_level == 'INTERMEDIATE')
+    low_risk = sum(1 for r in all_results if r.risk_level == 'LOW')
+
+    return render_template(
+        'dashboard.html',
+        all_results=all_results,
+        total=total,
+        malignant=malignant,
+        benign=benign,
+        avg_risk=avg_risk,
+        high_risk=high_risk,
+        intermediate_risk=intermediate_risk,
+        low_risk=low_risk,
+    )    
 # ── Run the App ──
 if __name__ == '__main__':
     print("=" * 50)
