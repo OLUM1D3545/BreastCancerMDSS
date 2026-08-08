@@ -50,8 +50,11 @@ class AnalysisResult(db.Model):
     heatmap_filename = db.Column(db.String(200), nullable=True)
 
 # Create database tables
-with app.app_context():
-    db.create_all()
+def init_db():
+    with app.app_context():
+        db.create_all()
+
+init_db()
 
 # Make sure the upload folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
