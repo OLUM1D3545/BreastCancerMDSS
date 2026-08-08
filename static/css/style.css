@@ -976,3 +976,26 @@ body.dark-mode .live-risk-panel {
     background: #111827;
     border: 1px solid #1f2937;
 }
+/* ── PDF Download Button ── */
+.btn-pdf {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--teal);
+    color: var(--white);
+    border: none;
+    padding: 12px 28px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+    margin-left: 12px;
+    font-family: 'Inter', sans-serif;
+}
+
+.btn-pdf:hover {
+    background: #026b78;
+    transform: translateY(-1px);
+}

@@ -19,6 +19,9 @@ import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+from fpdf import FPDF
+import io
+from flask import send_file
 
 # ── Create Flask App ──
 app = Flask(__name__)
@@ -76,7 +79,7 @@ def predict_with_model(img_array, clinical_features):
     birads = clinical_features['birads']
     age = clinical_features['age']
     family_history = clinical_features['family_history']
-    density = clinical_features['density']
+    density = clinical_features['density'] 
 
     # Simple risk scoring based on clinical factors
     # (In the real model, this would come from the CNN+SVM)
@@ -370,7 +373,208 @@ def predict():
         timestamp=timestamp_display,
     )
 
+# ── PDF Report Generation ──
+@app.route('/download-report', methods=['POST'])
+def download_report():
+    """
+    Generates a professional PDF clinical report
+    and sends it to the doctor for download.
+    """
 
+    # Get all the result data from the form
+    prediction = request.form.get('prediction', 'UNKNOWN')
+    confidence = request.form.get('confidence', '0')
+    risk_level = request.form.get('risk_level', 'UNKNOWN')
+    risk_score = request.form.get('risk_score', '0')
+    recommendation = request.form.get('recommendation', '')
+    age = request.form.get('age', '')
+    birads = request.form.get('birads', '')
+    family_history = request.form.get('family_history', '')
+    density = request.form.get('density', '')
+    menopause = request.form.get('menopause', '')
+    prior_biopsy = request.form.get('prior_biopsy', '')
+    timestamp = request.form.get('timestamp', '')
+
+    # SHAP features
+    shap_names = request.form.getlist('shap_names[]')
+    shap_values = request.form.getlist('shap_values[]')
+
+    # ── Build the PDF ──
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_margins(20, 20, 20)
+
+    # Header bar
+    pdf.set_fill_color(0, 32, 96)  # Navy
+    pdf.rect(0, 0, 210, 28, 'F')
+
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font('Helvetica', 'B', 16)
+    pdf.set_xy(20, 8)
+    pdf.cell(0, 10, 'MDSS - Breast Cancer Detection Report', ln=True)
+
+    pdf.set_font('Helvetica', '', 9)
+    pdf.set_xy(20, 18)
+    pdf.cell(0, 6, 'Medical Decision Support System | AAUA Faculty of Computing | Subgroup 3 | Supervised by Dr. Ogbeide')
+
+    # Gold line
+    pdf.set_fill_color(245, 166, 35)  # Gold
+    pdf.rect(0, 28, 210, 2, 'F')
+
+    # Reset text color
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_xy(20, 36)
+
+    # Report date
+    pdf.set_font('Helvetica', '', 9)
+    pdf.set_text_color(100, 100, 100)
+    pdf.cell(0, 6, f'Report Generated: {timestamp}', ln=True)
+    pdf.ln(4)
+
+    # ── Prediction Result Box ──
+    if prediction == 'MALIGNANT':
+        pdf.set_fill_color(200, 75, 49)  # Red
+    else:
+        pdf.set_fill_color(44, 110, 73)  # Green
+
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font('Helvetica', 'B', 18)
+    pdf.set_x(20)
+    pdf.cell(170, 16, f'AI PREDICTION: {prediction}', ln=True, fill=True, align='C')
+    pdf.ln(2)
+
+    pdf.set_font('Helvetica', '', 11)
+    pdf.set_fill_color(240, 244, 248)
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_x(20)
+    pdf.cell(170, 10, f'Model Confidence: {confidence}%   |   Risk Level: {risk_level}   |   Risk Score: {risk_score}%', ln=True, fill=True, align='C')
+    pdf.ln(6)
+
+    # ── Patient Information ──
+    pdf.set_font('Helvetica', 'B', 12)
+    pdf.set_text_color(0, 32, 96)
+    pdf.set_x(20)
+    pdf.cell(0, 8, 'PATIENT INFORMATION', ln=True)
+
+    pdf.set_fill_color(0, 32, 96)
+    pdf.rect(20, pdf.get_y(), 170, 0.5, 'F')
+    pdf.ln(4)
+
+    pdf.set_font('Helvetica', '', 11)
+    pdf.set_text_color(0, 0, 0)
+
+    patient_info = [
+        ('Patient Age', f'{age} years'),
+        ('BI-RADS Category', f'Category {birads}'),
+        ('Family History of Breast Cancer', family_history),
+        ('Breast Density', density),
+        ('Menopausal Status', menopause),
+        ('Prior Biopsy', prior_biopsy),
+    ]
+
+    for label, value in patient_info:
+        pdf.set_x(20)
+        pdf.set_font('Helvetica', 'B', 10)
+        pdf.cell(80, 8, label + ':', ln=False)
+        pdf.set_font('Helvetica', '', 10)
+        pdf.cell(90, 8, value, ln=True)
+
+    pdf.ln(4)
+
+    # ── Risk Assessment ──
+    pdf.set_font('Helvetica', 'B', 12)
+    pdf.set_text_color(0, 32, 96)
+    pdf.set_x(20)
+    pdf.cell(0, 8, 'RISK ASSESSMENT', ln=True)
+
+    pdf.set_fill_color(0, 32, 96)
+    pdf.rect(20, pdf.get_y(), 170, 0.5, 'F')
+    pdf.ln(4)
+
+    pdf.set_font('Helvetica', 'B', 10)
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_x(20)
+    pdf.cell(80, 8, 'Risk Level:', ln=False)
+    pdf.set_font('Helvetica', 'B', 10)
+    if risk_level == 'HIGH':
+        pdf.set_text_color(200, 75, 49)
+    elif risk_level == 'INTERMEDIATE':
+        pdf.set_text_color(200, 130, 0)
+    else:
+        pdf.set_text_color(44, 110, 73)
+    pdf.cell(90, 8, f'{risk_level} RISK ({risk_score}%)', ln=True)
+    pdf.set_text_color(0, 0, 0)
+
+    pdf.ln(2)
+    pdf.set_font('Helvetica', 'B', 10)
+    pdf.set_x(20)
+    pdf.cell(0, 6, 'Clinical Recommendation:', ln=True)
+    pdf.set_font('Helvetica', '', 10)
+    pdf.set_x(20)
+    pdf.multi_cell(170, 6, recommendation)
+    pdf.ln(4)
+
+    # ── SHAP Values ──
+    if shap_names:
+        pdf.set_font('Helvetica', 'B', 12)
+        pdf.set_text_color(0, 32, 96)
+        pdf.set_x(20)
+        pdf.cell(0, 8, 'SHAP FEATURE IMPORTANCE', ln=True)
+
+        pdf.set_fill_color(0, 32, 96)
+        pdf.rect(20, pdf.get_y(), 170, 0.5, 'F')
+        pdf.ln(4)
+
+        pdf.set_font('Helvetica', '', 9)
+        pdf.set_text_color(100, 100, 100)
+        pdf.set_x(20)
+        pdf.cell(0, 6, 'The following shows how much each clinical factor contributed to the AI prediction:', ln=True)
+        pdf.ln(2)
+
+        for name, value in zip(shap_names, shap_values):
+            pdf.set_font('Helvetica', 'B', 10)
+            pdf.set_text_color(0, 0, 0)
+            pdf.set_x(20)
+            pdf.cell(100, 7, name + ':', ln=False)
+            pdf.set_font('Helvetica', '', 10)
+            pdf.set_text_color(0, 128, 144)
+            pdf.cell(70, 7, value, ln=True)
+            pdf.set_text_color(0, 0, 0)
+
+    pdf.ln(4)
+
+    # ── Disclaimer ──
+    pdf.set_fill_color(240, 244, 248)
+    pdf.set_x(20)
+    pdf.set_font('Helvetica', 'I', 9)
+    pdf.set_text_color(100, 100, 100)
+    pdf.multi_cell(170, 5,
+        'DISCLAIMER: This AI-generated report is intended to support, not replace, clinical judgement. '
+        'All findings should be reviewed by a qualified healthcare professional before any clinical decision is made. '
+        'This system was developed by Subgroup 3, AAUA Faculty of Computing, under the supervision of Dr. Ogbeide.',
+        fill=True
+    )
+
+    # ── Footer ──
+    pdf.set_fill_color(0, 32, 96)
+    pdf.rect(0, 285, 210, 12, 'F')
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font('Helvetica', '', 8)
+    pdf.set_xy(20, 288)
+    pdf.cell(0, 6, 'MDSS - Hybrid AI Model for Breast Cancer Detection | AAUA CSC Department | Subgroup 3 | Dr. Ogbeide')
+
+    # ── Save and send PDF ──
+    pdf_output = io.BytesIO()
+    pdf_bytes = pdf.output()
+    pdf_output.write(pdf_bytes)
+    pdf_output.seek(0)
+
+    return send_file(
+        pdf_output,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=f'MDSS_Report_{timestamp.replace(" ", "_").replace(",", "")}.pdf'
+    )
 # ── Run the App ──
 if __name__ == '__main__':
     print("=" * 50)

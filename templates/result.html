@@ -189,10 +189,31 @@
             </div>
 
             <!-- ACTIONS -->
-            <div class="actions-bar">
-                <a href="/" class="btn-new">← New Analysis</a>
-                <button class="btn-print" onclick="printReport()">🖨️ Print Report</button>
-            </div>
+<div class="actions-bar">
+    <a href="/" class="btn-new">← New Analysis</a>
+    <button class="btn-print" onclick="printReport()">🖨️ Print Report</button>
+
+    <!-- PDF Download Form -->
+    <form action="/download-report" method="POST" style="display:inline;">
+        <input type="hidden" name="prediction" value="{{ prediction }}">
+        <input type="hidden" name="confidence" value="{{ confidence }}">
+        <input type="hidden" name="risk_level" value="{{ risk_level }}">
+        <input type="hidden" name="risk_score" value="{{ risk_score }}">
+        <input type="hidden" name="recommendation" value="{{ recommendation }}">
+        <input type="hidden" name="age" value="{{ age }}">
+        <input type="hidden" name="birads" value="{{ birads }}">
+        <input type="hidden" name="family_history" value="{{ family_history }}">
+        <input type="hidden" name="density" value="{{ density }}">
+        <input type="hidden" name="menopause" value="{{ menopause }}">
+        <input type="hidden" name="prior_biopsy" value="{{ prior_biopsy }}">
+        <input type="hidden" name="timestamp" value="{{ timestamp }}">
+        {% for feature in shap_features %}
+        <input type="hidden" name="shap_names[]" value="{{ feature.name }}">
+        <input type="hidden" name="shap_values[]" value="{{ feature.value }}">
+        {% endfor %}
+        <button type="submit" class="btn-pdf">📄 Download PDF Report</button>
+    </form>
+</div>
 
         </div>
     </section>
