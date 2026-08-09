@@ -326,7 +326,8 @@ def dashboard():
             low_risk=low_risk,
         )
     except Exception as e:
-        return f'Dashboard error: {str(e)}', 500
+       import traceback
+       return f'Dashboard error: {traceback.format_exc()}', 500
 
     return render_template(
         'dashboard.html',
