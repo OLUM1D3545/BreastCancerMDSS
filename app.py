@@ -54,7 +54,11 @@ class AnalysisResult(db.Model):
 
 # ── Create tables ──
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+        print("Database tables created successfully")
+    except Exception as e:
+        print(f"Database creation error: {e}")
 
 
 # ══════════════════════════════════════════════
@@ -298,14 +302,31 @@ def predict():
 
 @app.route('/dashboard')
 def dashboard():
-    all_results = AnalysisResult.query.order_by(AnalysisResult.id.desc()).all()
-    total = len(all_results)
-    malignant = sum(1 for r in all_results if r.prediction == 'MALIGNANT')
-    benign = total - malignant
-    avg_risk = round(sum(r.risk_score for r in all_results) / total, 1) if total > 0 else 0
-    high_risk = sum(1 for r in all_results if r.risk_level == 'HIGH')
-    intermediate_risk = sum(1 for r in all_results if r.risk_level == 'INTERMEDIATE')
-    low_risk = sum(1 for r in all_results if r.risk_level == 'LOW')
+    try:
+        all_results = AnalysisResult.query.order_by(
+            AnalysisResult.id.desc()
+        ).all()
+        total = len(all_results)
+        malignant = sum(1 for r in all_results if r.prediction == 'MALIGNANT')
+        benign = total - malignant
+        avg_risk = round(sum(r.risk_score for r in all_results) / total, 1) if total > 0 else 0
+        high_risk = sum(1 for r in all_results if r.risk_level == 'HIGH')
+        intermediate_risk = sum(1 for r in all_results if r.risk_level == 'INTERMEDIATE')
+        low_risk = sum(1 for r in all_results if r.risk_level == 'LOW')
+
+        return render_template(
+            'dashboard.html',
+            all_results=all_results,
+            total=total,
+            malignant=malignant,
+            benign=benign,
+            avg_risk=avg_risk,
+            high_risk=high_risk,
+            intermediate_risk=intermediate_risk,
+            low_risk=low_risk,
+        )
+    except Exception as e:
+        return f'Dashboard error: {str(e)}', 500
 
     return render_template(
         'dashboard.html',
@@ -462,6 +483,6 @@ if __name__ == '__main__':
     print("=" * 50)
     print(" MDSS - Breast Cancer Detection System")
     print(" Subgroup 3 - AAUA CSC Dept")
-    print(" http://localhost:5000")
+    print(" http://localhost:5000") 
     print("=" * 50)
     app.run(debug=True, port=5000)
