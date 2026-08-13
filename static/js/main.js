@@ -201,3 +201,87 @@ function createDarkModeToggle() {
 
 // Run when page loads
 createDarkModeToggle();
+// ── Live Risk Score Preview ──
+// Updates the risk score in real time as the doctor
+// fills in the clinical data fields
+
+function updateLiveRisk() {
+    const age = parseInt(document.querySelector('[name="age"]')?.value) || 0;
+    const birads = parseInt(document.querySelector('[name="birads"]')?.value) || 0;
+    const familyHistory = parseInt(document.querySelector('[name="family_history"]')?.value) || 0;
+    const density = parseInt(document.querySelector('[name="density"]')?.value) || 1;
+    const menopause = parseInt(document.querySelector('[name="menopause"]')?.value) || 0;
+    const priorBiopsy = parseInt(document.querySelector('[name="prior_biopsy"]')?.value) || 0;
+
+    // Calculate live risk score
+    let risk = 0;
+    const biradsFactor = birads * 0.15;
+    const ageFactor = age > 0 ? (age - 18) / 82 * 0.25 : 0;
+    const familyFactor = familyHistory * 0.20;
+    const densityFactor = density / 4 * 0.12;
+    const menopauseFactor = menopause * 0.10;
+    const biopsyFactor = priorBiopsy * 0.08;
+
+    risk = biradsFactor + ageFactor + familyFactor + densityFactor + menopauseFactor + biopsyFactor;
+    risk = Math.min(Math.max(risk, 0), 0.99);
+
+    const riskPercent = Math.round(risk * 100);
+    const scoreEl = document.getElementById('liveRiskScore');
+    const labelEl = document.getElementById('liveRiskLabel');
+    const fillEl = document.getElementById('liveRiskFill');
+    const factorsEl = document.getElementById('liveRiskFactors');
+
+    if (!scoreEl) return;
+
+    // Only show if at least one field is filled
+    if (age === 0 && birads === 0) {
+        scoreEl.textContent = '--';
+        labelEl.textContent = 'Fill in patient details to see live risk estimate';
+        fillEl.style.width = '0%';
+        factorsEl.innerHTML = '';
+        return;
+    }
+
+    // Update score display
+    scoreEl.textContent = riskPercent + '%';
+    fillEl.style.width = riskPercent + '%';
+
+    // Update label based on risk level
+    if (riskPercent < 30) {
+        labelEl.textContent = '🟢 LOW RISK — Routine annual screening recommended';
+        scoreEl.style.color = '#2C6E49';
+    } else if (riskPercent < 70) {
+        labelEl.textContent = '🟡 INTERMEDIATE RISK — Follow-up in 6 months recommended';
+        scoreEl.style.color = '#F5A623';
+    } else {
+        labelEl.textContent = '🔴 HIGH RISK — Immediate biopsy referral recommended';
+        scoreEl.style.color = '#C84B31';
+    }
+
+    // Show factor breakdown
+    const total = biradsFactor + ageFactor + familyFactor + densityFactor + menopauseFactor + biopsyFactor + 0.001;
+    const factors = [
+        { name: 'BI-RADS Score', val: biradsFactor, pct: Math.round(biradsFactor / total * 100) },
+        { name: 'Patient Age', val: ageFactor, pct: Math.round(ageFactor / total * 100) },
+        { name: 'Family History', val: familyFactor, pct: Math.round(familyFactor / total * 100) },
+        { name: 'Breast Density', val: densityFactor, pct: Math.round(densityFactor / total * 100) },
+        { name: 'Menopausal Status', val: menopauseFactor, pct: Math.round(menopauseFactor / total * 100) },
+        { name: 'Prior Biopsy', val: biopsyFactor, pct: Math.round(biopsyFactor / total * 100) },
+    ];
+
+    factorsEl.innerHTML = factors.map(f => `
+        <div class="live-factor-item">
+            <span>${f.name}</span>
+            <div class="live-factor-bar">
+                <div class="live-factor-fill" style="width: ${f.pct}%"></div>
+            </div>
+            <span class="live-factor-val">${f.pct}%</span>
+        </div>
+    `).join('');
+}
+
+// Listen for changes on all clinical fields
+document.querySelectorAll('[name="age"],[name="birads"],[name="family_history"],[name="density"],[name="menopause"],[name="prior_biopsy"]').forEach(function(el) {
+    el.addEventListener('input', updateLiveRisk);
+    el.addEventListener('change', updateLiveRisk);
+});
