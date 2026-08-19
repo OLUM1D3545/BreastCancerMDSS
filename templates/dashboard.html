@@ -175,9 +175,11 @@
             </div>
         </div>
         <div class="nav-right">
-            <a href="/" style="color:white;text-decoration:none;font-size:13px;margin-right:16px;">← New Analysis</a>
-            <span class="nav-badge">AAUA · CSC Department</span>
-            <span class="nav-badge">Subgroup 3</span>
+            <div style="display:flex;align-items:center;gap:12px;">
+    <a href="/" style="color:white;text-decoration:none;font-size:13px;">← New Analysis</a>
+    <span style="background:rgba(255,255,255,0.12);color:white;border:1px solid rgba(255,255,255,0.2);padding:4px 12px;border-radius:20px;font-size:11px;">{{ current_user.name }}</span>
+    <a href="/logout" style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);padding:6px 16px;border-radius:20px;font-size:12px;text-decoration:none;">Sign Out</a>
+</div>
         </div>
     </nav>
 

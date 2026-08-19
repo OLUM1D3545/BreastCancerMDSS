@@ -4,7 +4,7 @@
 
 # ═══════════════════════════════════════
 
-from flask import Flask, render_template, request, url_for, send_file
+from flask import Flask, render_template, request, url_for, send_file, redirect, flash, session
 from flask_sqlalchemy import SQLAlchemy
 import os
 import numpy as np
@@ -15,6 +15,10 @@ matplotlib.use('Agg')
 import matplotlib.cm as cm
 import io
 from fpdf import FPDF
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_bcrypt import Bcrypt
+from flask import Flask, render_template, request, url_for, send_file
+
 
 # ── Create Flask App ──
 app = Flask(__name__)
@@ -30,12 +34,29 @@ app.secret_key = 'mdss-aaua-subgroup3-secret-key'
 
 # ── Database ──
 db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Please login to access this page.'
 
 # ── Make sure upload folder exists ──
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # ── Allowed file types ──
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'dcm', 'bmp'}
+
+# ── User Model ──
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(20), nullable=False, default='patient')
+    created_at = db.Column(db.String(100), nullable=True)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 # ── Database Model ──
 class AnalysisResult(db.Model):
@@ -203,9 +224,9 @@ def compute_risk_level(risk_score, birads):
 # ══════════════════════════════════════════════
 
 @app.route('/')
+@login_required
 def index():
-    return render_template('index.html')
-
+    return render_template('index.html', user=current_user)
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -302,6 +323,7 @@ def predict():
 
 
 @app.route('/dashboard')
+@login_required
 def dashboard():
     try:
         all_results = AnalysisResult.query.order_by(
@@ -479,6 +501,80 @@ def download_report():
         download_name=f'MDSS_Report_{timestamp_str if "timestamp_str" in dir() else "report"}.pdf'
     )
 
+# ── Login Route ──
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        if current_user.role == 'patient':
+            return redirect('/patient-dashboard')
+        return redirect('/')
+
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        user = User.query.filter_by(email=email).first()
+
+        if user and bcrypt.check_password_hash(user.password, password):
+            login_user(user)
+            if user.role == 'patient':
+                return redirect('/patient-dashboard')
+            return redirect('/')
+        else:
+            return render_template('login.html', error='Invalid email or password. Please try again.')
+
+    return render_template('login.html', error=None)
+
+
+# ── Register Route ──
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect('/')
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        role = request.form.get('role', 'patient')
+
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            return render_template('register.html', error='An account with this email already exists.')
+
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        new_user = User(
+            name=name,
+            email=email,
+            password=hashed_password,
+            role=role,
+            created_at=datetime.now().strftime('%d %B %Y')
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        login_user(new_user)
+
+        if role == 'patient':
+            return redirect('/patient-dashboard')
+        return redirect('/')
+
+    return render_template('register.html', error=None)
+
+
+# ── Logout Route ──
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect('/login')
+
+
+# ── Patient Dashboard Route ──
+@app.route('/patient-dashboard')
+@login_required
+def patient_dashboard():
+    if current_user.role != 'patient':
+        return redirect('/')
+    return render_template('patient_dashboard.html', user=current_user)
 
 # ── Run ──
 if __name__ == '__main__':

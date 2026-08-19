@@ -21,11 +21,11 @@
             </div>
         </div>
         <div class="nav-right">
-            <span class="nav-badge">AAUA · CSC Department</span>
-            <a href="/dashboard" style="color:white;text-decoration:none;font-size:13px;margin-right:12px;">📊 Dashboard</a>
-            <span class="nav-badge">Subgroup 3</span>
-        </div>
-    </nav>
+    <a href="/dashboard" style="color:white;text-decoration:none;font-size:13px;margin-right:12px;">📊 Dashboard</a>
+    <span class="nav-badge">{{ current_user.name }}</span>
+    <span class="nav-badge">{{ current_user.role | title }}</span>
+    <a href="/logout" style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);padding:6px 16px;border-radius:20px;font-size:12px;text-decoration:none;margin-left:8px;">Sign Out</a>
+</div>
 
     <!-- RESULT HERO -->
     <section class="result-hero">

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Results - MDSS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #F0F4F8;
+            min-height: 100vh;
+        }
+        .navbar {
+            background: #002060;
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: #F5A623;
+            color: #002060;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .logo-title {
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .logo-sub {
+            color: #F5A623;
+            font-size: 11px;
+            display: block;
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .nav-user {
+            color: white;
+            font-size: 13px;
+        }
+        .btn-logout {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .hero {
+            background: linear-gradient(135deg, #002060 0%, #028090 100%);
+            padding: 48px 32px;
+        }
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .hero-greeting {
+            font-size: 13px;
+            color: #F5A623;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        .hero-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 12px;
+        }
+        .hero-sub {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+        }
+        .content {
+            max-width: 800px;
+            margin: 48px auto;
+            padding: 0 24px;
+        }
+        .no-results {
+            background: white;
+            border-radius: 16px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+        .no-results-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        .no-results h3 {
+            font-size: 20px;
+            color: #002060;
+            margin-bottom: 10px;
+        }
+        .no-results p {
+            font-size: 14px;
+            color: #94a3b8;
+            line-height: 1.7;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .info-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            border-left: 4px solid #002060;
+        }
+        .info-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #002060;
+            margin-bottom: 8px;
+        }
+        .info-card p {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.7;
+        }
+        .info-card .highlight {
+            background: #f0f4f8;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.7;
+        }
+        .result-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f0f4f8;
+        }
+        .result-date {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+        .result-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .result-badge.normal {
+            background: #dcfce7;
+            color: #2C6E49;
+        }
+        .result-badge.attention {
+            background: #fee2e2;
+            color: #C84B31;
+        }
+        .result-badge.monitor {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+        .result-message {
+            font-size: 16px;
+            color: #1e293b;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        .result-action {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.7;
+            background: #f8fafc;
+            padding: 14px;
+            border-radius: 8px;
+            border-left: 3px solid #F5A623;
+        }
+        .disclaimer {
+            background: #fef9c3;
+            border: 1px solid #fde047;
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-size: 12px;
+            color: #854d0e;
+            margin-top: 32px;
+            line-height: 1.6;
+        }
+        footer {
+            background: #000d1a;
+            padding: 24px;
+            text-align: center;
+            margin-top: 48px;
+        }
+        footer p {
+            color: rgba(255,255,255,0.4);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-logo">
+            <div class="logo-icon">+</div>
+            <div>
+                <span class="logo-title">MDSS</span>
+                <span class="logo-sub">Medical Decision Support System</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <span class="nav-user">👤 {{ user.name }}</span>
+            <a href="/logout" class="btn-logout">Sign Out</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-greeting">MY HEALTH PORTAL</div>
+            <h1 class="hero-title">Hello, {{ user.name.split()[0] }} 👋</h1>
+            <p class="hero-sub">Welcome to your personal health results page. Here you can view your breast cancer screening results in a simple and easy to understand format.</p>
+        </div>
+    </section>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+        <!-- Info Card -->
+        <div class="info-card">
+            <h3>📋 About Your Results</h3>
+            <p>Your results on this page are generated by our AI-powered Medical Decision Support System. The system analyses your mammogram scan together with your clinical information to give you a personalised assessment.</p>
+            <div class="highlight">
+                ⚠️ <strong>Important:</strong> These results are provided to help you understand your screening outcome. Always discuss your results with your doctor before making any health decisions. The AI system supports your doctor — it does not replace them.
+            </div>
+        </div>
+
+        <!-- No results state -->
+        <div class="no-results">
+            <div class="no-results-icon">🩻</div>
+            <h3>No Results Yet</h3>
+            <p>Your doctor has not uploaded any screening results for you yet. Please visit your healthcare provider and ask them to run an analysis using the MDSS system.</p>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+            ⚠️ <strong>Medical Disclaimer:</strong> The information on this page is generated by an AI system and is intended for informational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of a qualified healthcare provider with any questions you may have regarding your health.
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>MDSS — Hybrid AI Model for Breast Cancer Detection</p>
+        <p>Developed by Subgroup 3 · AAUA Faculty of Computing · CSC Department · Supervised by Dr. Ogbeide</p>
+    </footer>
+
+</body>
+</html>

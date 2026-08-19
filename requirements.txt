@@ -8,3 +8,5 @@ pandas
 gunicorn
 fpdf2
 flask-sqlalchemy
+flask-login
+flask-bcrypt
