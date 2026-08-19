@@ -10,22 +10,23 @@
 <body>
 
     <!-- NAVIGATION BAR -->
-    <nav class="navbar">
-        <div class="nav-left">
-            <div class="nav-logo">
-                <div class="logo-icon">+</div>
-                <div>
-                    <span class="logo-title">MDSS</span>
-                    <span class="logo-sub">Medical Decision Support System</span>
-                </div>
+<nav class="navbar">
+    <div class="nav-left">
+        <div class="nav-logo">
+            <div class="logo-icon">+</div>
+            <div>
+                <span class="logo-title">MDSS</span>
+                <span class="logo-sub">Medical Decision Support System</span>
             </div>
         </div>
-        <div class="nav-right">
-    <a href="/dashboard" style="color:white;text-decoration:none;font-size:13px;margin-right:12px;">📊 Dashboard</a>
-    <span class="nav-badge">{{ current_user.name }}</span>
-    <span class="nav-badge">{{ current_user.role | title }}</span>
-    <a href="/logout" style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);padding:6px 16px;border-radius:20px;font-size:12px;text-decoration:none;margin-left:8px;">Sign Out</a>
-</div>
+    </div>
+    <div class="nav-right">
+        <a href="/dashboard" class="nav-link">📊 Dashboard</a>
+        <span class="nav-badge">{{ current_user.name }}</span>
+        <span class="nav-badge">{{ current_user.role | title }}</span>
+        <a href="/logout" class="nav-logout">Sign Out</a>
+    </div>
+</nav>
 
     <!-- HERO SECTION -->
     <section class="hero">
