@@ -285,3 +285,17 @@ document.querySelectorAll('[name="age"],[name="birads"],[name="family_history"],
     el.addEventListener('input', updateLiveRisk);
     el.addEventListener('change', updateLiveRisk);
 });
+// ── Tooltip Toggle for Mobile ──
+document.querySelectorAll('.tooltip-icon').forEach(function(icon) {
+    icon.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const wrap = this.parentElement;
+        const isActive = wrap.classList.contains('active');
+        document.querySelectorAll('.tooltip-wrap').forEach(w => w.classList.remove('active'));
+        if (!isActive) wrap.classList.add('active');
+    });
+});
+
+document.addEventListener('click', function() {
+    document.querySelectorAll('.tooltip-wrap').forEach(w => w.classList.remove('active'));
+});

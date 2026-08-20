@@ -6,6 +6,71 @@
     <title>MDSS - Breast Cancer Detection System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+    /* ── Tooltip Styles ── */
+    .field-label-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 6px;
+    }
+    .field-label-row label {
+        margin-bottom: 0;
+    }
+    .tooltip-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+    }
+    .tooltip-icon {
+        width: 18px;
+        height: 18px;
+        background: #028090;
+        color: white;
+        border-radius: 50%;
+        font-size: 11px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        user-select: none;
+        transition: background 0.2s;
+    }
+    .tooltip-icon:hover { background: #002060; }
+    .tooltip-box {
+        display: none;
+        position: absolute;
+        left: 26px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #1E293B;
+        color: #F8FAFC;
+        font-size: 12px;
+        line-height: 1.6;
+        padding: 10px 14px;
+        border-radius: 8px;
+        width: 240px;
+        z-index: 999;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+        pointer-events: none;
+    }
+    .tooltip-box::before {
+        content: '';
+        position: absolute;
+        left: -6px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: 6px solid transparent;
+        border-right-color: #1E293B;
+        border-left: 0;
+    }
+    .tooltip-wrap:hover .tooltip-box,
+    .tooltip-wrap.active .tooltip-box {
+        display: block;
+    }
+</style>
 </head>
 <body>
 
@@ -104,70 +169,112 @@
 
                         <div class="fields">
 
-                            <div class="field-row">
-                                <div class="field">
-                                    <label>Patient Age <span class="required">*</span></label>
-                                    <input type="number" name="age" placeholder="e.g. 45" min="18" max="100" required>
-                                </div>
-                                <div class="field">
-                                    <label>BI-RADS Category <span class="required">*</span></label>
-                                    <select name="birads" required>
-                                        <option value="" disabled selected>Select category</option>
-                                        <option value="1">Category 1 - Negative</option>
-                                        <option value="2">Category 2 - Benign</option>
-                                        <option value="3">Category 3 - Probably Benign</option>
-                                        <option value="4">Category 4 - Suspicious</option>
-                                        <option value="5">Category 5 - Highly Suspicious</option>
-                                        <option value="6">Category 6 - Known Malignancy</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="field-row">
-                                <div class="field">
-                                    <label>Family History of Breast Cancer</label>
-                                    <select name="family_history">
-                                        <option value="0">No</option>
-                                        <option value="1">Yes</option>
-                                    </select>
-                                </div>
-                                <div class="field">
-                                    <label>Breast Density</label>
-                                    <select name="density">
-                                        <option value="1">Type A - Almost entirely fatty</option>
-                                        <option value="2">Type B - Scattered density</option>
-                                        <option value="3">Type C - Heterogeneously dense</option>
-                                        <option value="4">Type D - Extremely dense</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="field-row">
-                                <div class="field">
-                                    <label>Menopausal Status</label>
-                                    <select name="menopause">
-                                        <option value="0">Pre-menopausal</option>
-                                        <option value="1">Post-menopausal</option>
-                                    </select>
-                                </div>
-                                <div class="field">
-                                    <label>Prior Biopsy</label>
-                                    <select name="prior_biopsy">
-                                        <option value="0">No</option>
-                                        <option value="1">Yes</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="field">
-                                <label>Additional Clinical Notes</label>
-                                <textarea name="notes" placeholder="Enter any additional clinical observations or notes here..." rows="3"></textarea>
-                            </div>
-
-                        </div>
-                    </div>
-
+    <div class="field-row">
+        <!-- Age -->
+        <div class="field">
+            <div class="field-label-row">
+                <label>Patient Age <span class="required">*</span></label>
+                <div class="tooltip-wrap">
+                    <div class="tooltip-icon">i</div>
+                    <div class="tooltip-box">Age is a major risk factor. Women above 40 years have a significantly higher risk of breast cancer. The older the patient, the higher the baseline risk.</div>
                 </div>
+            </div>
+            <input type="number" name="age" placeholder="e.g. 45" min="18" max="100" required>
+        </div>
+
+        <!-- BI-RADS -->
+        <div class="field">
+            <div class="field-label-row">
+                <label>BI-RADS Category <span class="required">*</span></label>
+                <div class="tooltip-wrap">
+                    <div class="tooltip-icon">i</div>
+                    <div class="tooltip-box">BI-RADS is a scoring system used by radiologists to classify what they see in a breast scan. Category 1 = Nothing found. Category 3 = Probably fine. Category 4 = Suspicious. Category 5 = Highly suspicious of cancer.</div>
+                </div>
+            </div>
+            <select name="birads" required>
+                <option value="" disabled selected>Select category</option>
+                <option value="1">Category 1 - Negative</option>
+                <option value="2">Category 2 - Benign</option>
+                <option value="3">Category 3 - Probably Benign</option>
+                <option value="4">Category 4 - Suspicious</option>
+                <option value="5">Category 5 - Highly Suspicious</option>
+                <option value="6">Category 6 - Known Malignancy</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="field-row">
+        <!-- Family History -->
+        <div class="field">
+            <div class="field-label-row">
+                <label>Family History</label>
+                <div class="tooltip-wrap">
+                    <div class="tooltip-icon">i</div>
+                    <div class="tooltip-box">If the patient has a close relative such as a mother, sister, or daughter who has had breast cancer, their own risk is significantly higher. This is one of the strongest risk factors.</div>
+                </div>
+            </div>
+            <select name="family_history">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select>
+        </div>
+
+        <!-- Breast Density -->
+        <div class="field">
+            <div class="field-label-row">
+                <label>Breast Density</label>
+                <div class="tooltip-wrap">
+                    <div class="tooltip-icon">i</div>
+                    <div class="tooltip-box">Breast density describes how much fibrous tissue is in the breast. Type A is mostly fat and easiest to read. Type D is very dense, hardest to read, and carries higher cancer risk. Dense breasts can hide tumours on a mammogram.</div>
+                </div>
+            </div>
+            <select name="density">
+                <option value="1">Type A - Almost entirely fatty</option>
+                <option value="2">Type B - Scattered density</option>
+                <option value="3">Type C - Heterogeneously dense</option>
+                <option value="4">Type D - Extremely dense</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="field-row">
+        <!-- Menopausal Status -->
+        <div class="field">
+            <div class="field-label-row">
+                <label>Menopausal Status</label>
+                <div class="tooltip-wrap">
+                    <div class="tooltip-icon">i</div>
+                    <div class="tooltip-box">Menopause is when a woman's monthly periods stop permanently, usually around age 50. Women who have gone through menopause have a higher risk of breast cancer than those who have not.</div>
+                </div>
+            </div>
+            <select name="menopause">
+                <option value="0">Pre-menopausal</option>
+                <option value="1">Post-menopausal</option>
+            </select>
+        </div>
+
+        <!-- Prior Biopsy -->
+        <div class="field">
+            <div class="field-label-row">
+                <label>Prior Biopsy</label>
+                <div class="tooltip-wrap">
+                    <div class="tooltip-icon">i</div>
+                    <div class="tooltip-box">A biopsy is a procedure where a small sample of breast tissue is removed and tested for cancer. If the patient has had a biopsy before, even if the result was benign, it slightly increases future cancer risk.</div>
+                </div>
+            </div>
+            <select name="prior_biopsy">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="field">
+        <label>Additional Clinical Notes</label>
+        <textarea name="notes" placeholder="Enter any additional clinical observations or notes here..." rows="3"></textarea>
+    </div>
+
+</div>
 
 
                 <!-- LIVE RISK PREVIEW -->
