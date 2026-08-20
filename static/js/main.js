@@ -299,3 +299,89 @@ document.querySelectorAll('.tooltip-icon').forEach(function(icon) {
 document.addEventListener('click', function() {
     document.querySelectorAll('.tooltip-wrap').forEach(w => w.classList.remove('active'));
 });
+// ── Voice Summary ──
+// Reads out the result automatically when the results page loads
+// Uses the browser's built-in text-to-speech
+
+function speakResult() {
+    const resultBadge = document.querySelector('.result-badge');
+    const riskLevel = document.querySelector('.result-card-title');
+
+    if (!resultBadge) return; // Only run on results page
+
+    const prediction = resultBadge.textContent.trim().split('—')[0].trim();
+    const confidence = resultBadge.textContent.trim().split('%')[0].split('—')[1]?.trim() || '';
+    const riskEl = document.querySelectorAll('.risk-tier.active')[0];
+    const risk = riskEl ? riskEl.textContent.trim().split('\n')[0].trim() : '';
+    const actionEl = document.querySelector('.risk-action');
+    const action = actionEl ? actionEl.textContent.replace('Recommended Action:', '').trim() : '';
+
+    const message = `Analysis complete. 
+        The AI model predicts this case as ${prediction}. 
+        Confidence level is ${confidence} percent. 
+        The overall risk assessment is ${risk} RISK. 
+        ${action}. 
+        Please consult with a qualified healthcare professional before making any clinical decisions.`;
+
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(message);
+        utterance.rate = 0.85;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+
+        // Try to use a clear English voice
+        const voices = window.speechSynthesis.getVoices();
+        const preferred = voices.find(v =>
+            v.lang.startsWith('en') && v.name.includes('Female')
+        ) || voices.find(v => v.lang.startsWith('en')) || voices[0];
+
+        if (preferred) utterance.voice = preferred;
+        window.speechSynthesis.speak(utterance);
+    }
+}
+
+// ── Voice control buttons ──
+function addVoiceControls() {
+    const actionsBar = document.querySelector('.actions-bar');
+    if (!actionsBar) return;
+
+    const voiceDiv = document.createElement('div');
+    voiceDiv.style.cssText = 'text-align:center;margin-top:16px;';
+    voiceDiv.innerHTML = `
+        <button onclick="speakResult()" style="
+            background: #7B2D8B;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 8px;
+            font-family: Inter, sans-serif;
+        ">🔊 Read Results Aloud</button>
+        <button onclick="window.speechSynthesis.cancel()" style="
+            background: transparent;
+            color: #475569;
+            border: 1.5px solid #e2e8f0;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: Inter, sans-serif;
+        ">⏹ Stop</button>
+    `;
+    actionsBar.appendChild(voiceDiv);
+}
+
+// Run voice controls on results page
+window.addEventListener('load', function() {
+    addVoiceControls();
+
+    // Auto speak after 1.5 seconds on results page
+    if (document.querySelector('.result-badge')) {
+        setTimeout(speakResult, 1500);
+    }
+});
