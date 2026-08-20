@@ -21,18 +21,23 @@
             </div>
         </div>
         <div class="nav-right">
-    <a href="/dashboard" style="color:white;text-decoration:none;font-size:13px;margin-right:12px;">📊 Dashboard</a>
-    <span class="nav-badge">{{ current_user.name }}</span>
-    <span class="nav-badge">{{ current_user.role | title }}</span>
-    <a href="/logout" style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);padding:6px 16px;border-radius:20px;font-size:12px;text-decoration:none;margin-left:8px;">Sign Out</a>
-</div>
+            <a href="/dashboard" class="nav-link">📊 Dashboard</a>
+            <span class="nav-badge">{{ current_user.name }}</span>
+            <span class="nav-badge">{{ current_user.role | title }}</span>
+            <a href="/logout" class="nav-logout">Sign Out</a>
+        </div>
+    </nav>
 
     <!-- RESULT HERO -->
     <section class="result-hero">
         <div class="result-hero-content">
             <div>
                 <div class="result-title">Analysis Complete</div>
-                <div class="result-sub">Patient Age: {{ age }} · BI-RADS: Category {{ birads }} · {{ timestamp }}</div>
+                <div class="result-sub">
+                    Patient Age: {{ age }} &nbsp;·&nbsp;
+                    BI-RADS: Category {{ birads }} &nbsp;·&nbsp;
+                    {{ timestamp }}
+                </div>
             </div>
             <div class="result-badge {{ prediction_class }}">
                 {{ prediction }} — {{ confidence }}% Confidence
@@ -56,9 +61,8 @@
                         <div class="confidence-fill" data-width="{{ confidence }}" style="width: 0%"></div>
                     </div>
                     <div class="confidence-label">{{ confidence }}%</div>
-
                     <br>
-                    <div style="font-size: 13px; color: #475569; line-height: 1.7;">
+                    <div style="font-size:13px;color:#475569;line-height:1.7;">
                         <strong>Model Used:</strong> Hybrid CNN-SVM<br>
                         <strong>Feature Extraction:</strong> VGG16 (512-dim vector)<br>
                         <strong>Classifier:</strong> Support Vector Machine (RBF Kernel)<br>
@@ -80,22 +84,19 @@
                             HIGH<br><span style="font-size:10px;font-weight:400">Above 70%</span>
                         </div>
                     </div>
-
-                    <div style="font-size: 24px; font-weight: 700; color: {{ risk_color }}; margin: 12px 0 6px;">
+                    <div style="font-size:24px;font-weight:700;color:{{ risk_color }};margin:12px 0 6px;">
                         {{ risk_level }} RISK
                     </div>
-                    <div style="font-size: 13px; color: #475569; margin-bottom: 14px;">
+                    <div style="font-size:13px;color:#475569;margin-bottom:14px;">
                         Risk Score: {{ risk_score }}%
                     </div>
-
                     <div class="risk-action">
                         <strong>Recommended Action:</strong><br>
                         {{ recommendation }}
                     </div>
-
                     <br>
-                    <div style="font-size: 12px; color: #94A3B8; line-height: 1.6;">
-                        Risk score is computed by combining the model malignancy probability with BI-RADS category, patient age, family history, and breast density using a weighted clinical formula.
+                    <div style="font-size:12px;color:#94A3B8;line-height:1.6;">
+                        Risk score combines the model malignancy probability with BI-RADS category, patient age, family history, and breast density using a weighted clinical formula.
                     </div>
                 </div>
 
@@ -104,7 +105,7 @@
             <!-- ROW 2: Grad-CAM + SHAP -->
             <div class="results-grid">
 
-                <!-- Grad-CAM Heatmap Card -->
+                <!-- Grad-CAM Card -->
                 <div class="result-card">
                     <div class="result-card-title">Grad-CAM Visual Explanation</div>
                     <img
@@ -113,19 +114,19 @@
                         class="heatmap-img"
                     >
                     <div class="heatmap-note">
-                        🔴 Red/orange regions indicate areas the CNN focused on most when making its prediction. These highlight the suspicious lesion or mass in the mammogram.
+                        🔴 Red/orange regions indicate areas the CNN focused on most when making its prediction.
                     </div>
                     <br>
-                    <div style="font-size: 12px; color: #94A3B8; line-height: 1.6;">
+                    <div style="font-size:12px;color:#94A3B8;line-height:1.6;">
                         <strong>Method:</strong> Gradient-weighted Class Activation Mapping (Grad-CAM) computes the gradient of the class score with respect to the last convolutional layer of the VGG16 network to produce this heatmap.
                     </div>
                 </div>
 
-                <!-- SHAP Values Card -->
+                <!-- SHAP Card -->
                 <div class="result-card">
                     <div class="result-card-title">SHAP Feature Importance</div>
-                    <div style="font-size: 13px; color: #475569; margin-bottom: 18px;">
-                        The chart below shows how much each clinical factor contributed to the prediction. Higher values mean greater influence on the result.
+                    <div style="font-size:13px;color:#475569;margin-bottom:18px;">
+                        The chart below shows how much each clinical factor contributed to the prediction.
                     </div>
 
                     {% for feature in shap_features %}
@@ -139,21 +140,21 @@
                     {% endfor %}
 
                     <br>
-                    <div style="font-size: 12px; color: #94A3B8; line-height: 1.6;">
-                        <strong>Method:</strong> SHapley Additive Explanations (SHAP) uses game theory principles to assign each clinical feature a contribution score, showing both positive (↑ risk) and negative (↓ risk) influences on the final prediction.
+                    <div style="font-size:12px;color:#94A3B8;line-height:1.6;">
+                        <strong>Method:</strong> SHapley Additive Explanations (SHAP) uses game theory principles to assign each clinical feature a contribution score.
                     </div>
                 </div>
 
             </div>
 
             <!-- ROW 3: Clinical Summary -->
-            <div class="result-card" style="margin-bottom: 24px;">
+            <div class="result-card" style="margin-bottom:24px;">
                 <div class="result-card-title">Clinical Summary Report</div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;">
 
                     <div>
-                        <div style="font-size: 12px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Patient Information</div>
-                        <div style="font-size: 14px; color: #1E293B; line-height: 2;">
+                        <div style="font-size:12px;color:#94A3B8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Patient Information</div>
+                        <div style="font-size:14px;color:#1E293B;line-height:2;">
                             <strong>Age:</strong> {{ age }} years<br>
                             <strong>BI-RADS:</strong> Category {{ birads }}<br>
                             <strong>Family History:</strong> {{ family_history }}<br>
@@ -164,8 +165,8 @@
                     </div>
 
                     <div>
-                        <div style="font-size: 12px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">AI Analysis Result</div>
-                        <div style="font-size: 14px; color: #1E293B; line-height: 2;">
+                        <div style="font-size:12px;color:#94A3B8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">AI Analysis Result</div>
+                        <div style="font-size:14px;color:#1E293B;line-height:2;">
                             <strong>Prediction:</strong> {{ prediction }}<br>
                             <strong>Confidence:</strong> {{ confidence }}%<br>
                             <strong>Risk Level:</strong> {{ risk_level }}<br>
@@ -176,13 +177,13 @@
                     </div>
 
                     <div>
-                        <div style="font-size: 12px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Clinical Recommendation</div>
-                        <div style="font-size: 14px; color: #1E293B; line-height: 1.8;">
+                        <div style="font-size:12px;color:#94A3B8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Clinical Recommendation</div>
+                        <div style="font-size:14px;color:#1E293B;line-height:1.8;">
                             {{ recommendation }}
                         </div>
                         <br>
-                        <div style="font-size: 12px; color: #94A3B8; line-height: 1.6;">
-                            ⚠️ This AI-generated report is intended to support, not replace, clinical judgement. All findings should be reviewed by a qualified healthcare professional.
+                        <div style="font-size:12px;color:#94A3B8;line-height:1.6;">
+                            ⚠️ This AI-generated report is intended to support, not replace, clinical judgement.
                         </div>
                     </div>
 
@@ -190,31 +191,31 @@
             </div>
 
             <!-- ACTIONS -->
-<div class="actions-bar">
-    <a href="/" class="btn-new">← New Analysis</a>
-    <button class="btn-print" onclick="printReport()">🖨️ Print Report</button>
+            <div class="actions-bar">
+                <a href="/" class="btn-new">← New Analysis</a>
+                <button class="btn-print" onclick="printReport()">🖨️ Print Report</button>
 
-    <!-- PDF Download Form -->
-    <form action="/download-report" method="POST" style="display:inline;">
-        <input type="hidden" name="prediction" value="{{ prediction }}">
-        <input type="hidden" name="confidence" value="{{ confidence }}">
-        <input type="hidden" name="risk_level" value="{{ risk_level }}">
-        <input type="hidden" name="risk_score" value="{{ risk_score }}">
-        <input type="hidden" name="recommendation" value="{{ recommendation }}">
-        <input type="hidden" name="age" value="{{ age }}">
-        <input type="hidden" name="birads" value="{{ birads }}">
-        <input type="hidden" name="family_history" value="{{ family_history }}">
-        <input type="hidden" name="density" value="{{ density }}">
-        <input type="hidden" name="menopause" value="{{ menopause }}">
-        <input type="hidden" name="prior_biopsy" value="{{ prior_biopsy }}">
-        <input type="hidden" name="timestamp" value="{{ timestamp }}">
-        {% for feature in shap_features %}
-        <input type="hidden" name="shap_names[]" value="{{ feature.name }}">
-        <input type="hidden" name="shap_values[]" value="{{ feature.value }}">
-        {% endfor %}
-        <button type="submit" class="btn-pdf">📄 Download PDF Report</button>
-    </form>
-</div>
+                <!-- PDF Download Form -->
+                <form action="/download-report" method="POST" style="display:inline;">
+                    <input type="hidden" name="prediction" value="{{ prediction }}">
+                    <input type="hidden" name="confidence" value="{{ confidence }}">
+                    <input type="hidden" name="risk_level" value="{{ risk_level }}">
+                    <input type="hidden" name="risk_score" value="{{ risk_score }}">
+                    <input type="hidden" name="recommendation" value="{{ recommendation }}">
+                    <input type="hidden" name="age" value="{{ age }}">
+                    <input type="hidden" name="birads" value="{{ birads }}">
+                    <input type="hidden" name="family_history" value="{{ family_history }}">
+                    <input type="hidden" name="density" value="{{ density }}">
+                    <input type="hidden" name="menopause" value="{{ menopause }}">
+                    <input type="hidden" name="prior_biopsy" value="{{ prior_biopsy }}">
+                    <input type="hidden" name="timestamp" value="{{ timestamp }}">
+                    {% for feature in shap_features %}
+                    <input type="hidden" name="shap_names[]" value="{{ feature.name }}">
+                    <input type="hidden" name="shap_values[]" value="{{ feature.value }}">
+                    {% endfor %}
+                    <button type="submit" class="btn-pdf">📄 Download PDF Report</button>
+                </form>
+            </div>
 
         </div>
     </section>
