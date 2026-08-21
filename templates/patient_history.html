@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient History - MDSS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .history-hero {
+            background: linear-gradient(135deg, #002060 0%, #7B2D8B 100%);
+            padding: 40px 32px;
+        }
+        .history-hero h1 { color: white; font-size: 26px; font-weight: 700; }
+        .history-hero p { color: rgba(255,255,255,0.6); font-size: 14px; margin-top: 6px; }
+        .history-section { padding: 40px 0; }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(4,1fr);
+            gap: 16px; margin-bottom: 32px;
+        }
+        .stat-card {
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08); text-align: center;
+        }
+        .stat-num { font-size: 32px; font-weight: 700; color: #002060; }
+        .stat-label { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+        .history-table {
+            background: white; border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08); overflow: hidden;
+        }
+        .history-table h3 {
+            padding: 20px 24px; font-size: 16px; font-weight: 700;
+            color: #002060; border-bottom: 2px solid #f0f4f8;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #002060; color: white;
+            padding: 12px 16px; font-size: 12px; text-align: left;
+        }
+        td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #f0f4f8; color: #475569; }
+        tr:hover td { background: #f8fafc; }
+        .badge {
+            padding: 3px 10px; border-radius: 20px;
+            font-size: 11px; font-weight: 700;
+        }
+        .badge.MALIGNANT { background: #fee2e2; color: #C84B31; }
+        .badge.BENIGN { background: #dcfce7; color: #2C6E49; }
+        .badge.HIGH { background: #fee2e2; color: #C84B31; }
+        .badge.INTERMEDIATE { background: #fef9c3; color: #854d0e; }
+        .badge.LOW { background: #dcfce7; color: #2C6E49; }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #002060; color: white; padding: 10px 24px;
+            border-radius: 8px; text-decoration: none; font-size: 14px;
+            font-weight: 600; margin-bottom: 24px;
+        }
+        .risk-trend {
+            background: white; border-radius: 12px; padding: 24px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08); margin-bottom: 24px;
+        }
+        .risk-trend h3 {
+            font-size: 16px; font-weight: 700; color: #002060; margin-bottom: 16px;
+        }
+        .trend-bar {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+        }
+        .trend-date { font-size: 12px; color: #94a3b8; min-width: 120px; }
+        .trend-track {
+            flex: 1; background: #f0f4f8; border-radius: 20px;
+            height: 12px; overflow: hidden;
+        }
+        .trend-fill { height: 100%; border-radius: 20px; transition: width 0.5s; }
+        .trend-score { font-size: 12px; font-weight: 600; color: #002060; min-width: 45px; }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="nav-logo">
+                <div class="logo-icon">+</div>
+                <div>
+                    <span class="logo-title">MDSS</span>
+                    <span class="logo-sub">Medical Decision Support System</span>
+                </div>
+            </div>
+        </div>
+        <div class="nav-right">
+            <a href="/dashboard" class="nav-link">📊 Dashboard</a>
+            <span class="nav-badge">{{ current_user.name }}</span>
+            <a href="/logout" class="nav-logout">Sign Out</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="history-hero">
+        <div style="max-width:1100px;margin:0 auto;">
+            <h1>👤 Patient History — {{ patient.name }}</h1>
+            <p>{{ patient.email }} · {{ total }} screening{{ 's' if total != 1 else '' }} on record</p>
+        </div>
+    </section>
+
+    <!-- CONTENT -->
+    <section class="history-section">
+        <div class="container">
+
+            <a href="/dashboard" class="btn-back">← Back to Dashboard</a>
+
+            {% if total == 0 %}
+            <div style="text-align:center;padding:60px;background:white;border-radius:12px;">
+                <div style="font-size:64px;margin-bottom:16px;">🩻</div>
+                <h3 style="color:#002060;margin-bottom:8px;">No screenings yet</h3>
+                <p style="color:#94a3b8;">No analyses have been performed for this patient yet.</p>
+                <a href="/" style="display:inline-block;margin-top:20px;background:#002060;color:white;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Run Analysis for This Patient</a>
+            </div>
+
+            {% else %}
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div style="font-size:28px;margin-bottom:8px;">🔬</div>
+                    <div class="stat-num">{{ total }}</div>
+                    <div class="stat-label">Total Screenings</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size:28px;margin-bottom:8px;">🟢</div>
+                    <div class="stat-num" style="color:#2C6E49;">{{ low_risk }}</div>
+                    <div class="stat-label">Low Risk</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size:28px;margin-bottom:8px;">🟡</div>
+                    <div class="stat-num" style="color:#F5A623;">{{ intermediate_risk }}</div>
+                    <div class="stat-label">Intermediate Risk</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size:28px;margin-bottom:8px;">🔴</div>
+                    <div class="stat-num" style="color:#C84B31;">{{ high_risk }}</div>
+                    <div class="stat-label">High Risk</div>
+                </div>
+            </div>
+
+            <!-- Risk Score Trend -->
+            <div class="risk-trend">
+                <h3>📈 Risk Score Trend Over Time</h3>
+                {% for result in results | reverse %}
+                <div class="trend-bar">
+                    <div class="trend-date">{{ result.timestamp[:11] }}</div>
+                    <div class="trend-track">
+                        <div class="trend-fill" style="width:{{ result.risk_score }}%;background:{% if result.risk_level == 'HIGH' %}#C84B31{% elif result.risk_level == 'INTERMEDIATE' %}#F5A623{% else %}#2C6E49{% endif %};"></div>
+                    </div>
+                    <div class="trend-score">{{ result.risk_score }}%</div>
+                    <span class="badge {{ result.risk_level }}" style="margin-left:8px;">{{ result.risk_level }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Full History Table -->
+            <div class="history-table">
+                <h3>Full Screening History</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Age</th>
+                            <th>BI-RADS</th>
+                            <th>Prediction</th>
+                            <th>Confidence</th>
+                            <th>Risk Level</th>
+                            <th>Risk Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ result.timestamp }}</td>
+                            <td>{{ result.age }} yrs</td>
+                            <td>Cat. {{ result.birads }}</td>
+                            <td><span class="badge {{ result.prediction }}">{{ result.prediction }}</span></td>
+                            <td>{{ result.confidence }}%</td>
+                            <td><span class="badge {{ result.risk_level }}">{{ result.risk_level }}</span></td>
+                            <td>{{ result.risk_score }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% endif %}
+
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>MDSS — Hybrid AI Model for Breast Cancer Detection</p>
+            <p>Developed by Subgroup 3 · AAUA Faculty of Computing · CSC Department · Supervised by Dr. Ogbeide</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+</html>

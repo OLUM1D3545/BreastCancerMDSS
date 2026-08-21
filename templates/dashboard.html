@@ -253,6 +253,7 @@
                 <table>
                     <thead>
                         <tr>
+                            <th style="background:#002060;color:white;padding:12px 16px;font-size:12px;text-align:left;">Patient</th>
                             <th>#</th>
                             <th>Date & Time</th>
                             <th>Age</th>
@@ -261,11 +262,19 @@
                             <th>Confidence</th>
                             <th>Risk Level</th>
                             <th>Risk Score</th>
+                            
                         </tr>
                     </thead>
                     <tbody>
                         {% for result in all_results %}
                         <tr>
+                            <td style="padding:12px 16px;font-size:13px;color:#475569;">
+    {% if result.patient_id %}
+    <a href="/patient-history/{{ result.patient_id }}" style="color:#028090;font-weight:600;text-decoration:none;">View History →</a>
+    {% else %}
+    <span style="color:#94a3b8;">No patient linked</span>
+    {% endif %}
+</td>
                             <td>{{ result.id }}</td>
                             <td>{{ result.timestamp }}</td>
                             <td>{{ result.age }} yrs</td>

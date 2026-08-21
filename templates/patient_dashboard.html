@@ -7,227 +7,108 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #F0F4F8;
-            min-height: 100vh;
-        }
+        body { font-family: 'Inter', sans-serif; background: #F0F4F8; min-height: 100vh; }
         .navbar {
-            background: #002060;
-            padding: 0 32px;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            background: #002060; padding: 0 32px; height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
         }
-        .nav-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .nav-logo { display: flex; align-items: center; gap: 12px; }
         .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: #F5A623;
-            color: #002060;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            font-weight: 700;
+            width: 36px; height: 36px; background: #F5A623; color: #002060;
+            border-radius: 8px; display: flex; align-items: center;
+            justify-content: center; font-size: 22px; font-weight: 700;
         }
-        .logo-title {
-            color: white;
-            font-size: 18px;
-            font-weight: 700;
-        }
-        .logo-sub {
-            color: #F5A623;
-            font-size: 11px;
-            display: block;
-        }
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .nav-user {
-            color: white;
-            font-size: 13px;
-        }
+        .logo-title { color: white; font-size: 18px; font-weight: 700; }
+        .logo-sub { color: #F5A623; font-size: 11px; display: block; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-user { color: white; font-size: 13px; }
         .btn-logout {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .btn-logout:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1); color: white;
+            border: 1px solid rgba(255,255,255,0.2); padding: 6px 16px;
+            border-radius: 20px; font-size: 12px; text-decoration: none;
         }
         .hero {
             background: linear-gradient(135deg, #002060 0%, #028090 100%);
             padding: 48px 32px;
         }
-        .hero-content {
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
+        .hero-content { max-width: 1000px; margin: 0 auto; }
+        .greeting { font-size: 13px; color: #F5A623; font-weight: 600; margin-bottom: 8px; }
+        .hero-title { font-size: 32px; font-weight: 700; color: white; margin-bottom: 8px; }
+        .hero-sub { font-size: 14px; color: rgba(255,255,255,0.6); }
+        .content { max-width: 1000px; margin: 40px auto; padding: 0 24px; }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 16px; margin-bottom: 32px;
         }
-        .hero-greeting {
-            font-size: 13px;
-            color: #F5A623;
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
+        .stat-card {
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08); text-align: center;
         }
-        .hero-title {
-            font-size: 32px;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 12px;
-        }
-        .hero-sub {
-            font-size: 14px;
-            color: rgba(255,255,255,0.6);
-        }
-        .content {
-            max-width: 800px;
-            margin: 48px auto;
-            padding: 0 24px;
-        }
-        .no-results {
-            background: white;
-            border-radius: 16px;
-            padding: 60px 40px;
-            text-align: center;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-        }
-        .no-results-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-        }
-        .no-results h3 {
-            font-size: 20px;
-            color: #002060;
-            margin-bottom: 10px;
-        }
-        .no-results p {
-            font-size: 14px;
-            color: #94a3b8;
-            line-height: 1.7;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        .info-card {
-            background: white;
-            border-radius: 16px;
-            padding: 32px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-            margin-bottom: 24px;
+        .stat-icon { font-size: 28px; margin-bottom: 8px; }
+        .stat-num { font-size: 28px; font-weight: 700; color: #002060; }
+        .stat-label { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+        .latest-card {
+            background: white; border-radius: 12px; padding: 28px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08); margin-bottom: 24px;
             border-left: 4px solid #002060;
         }
-        .info-card h3 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #002060;
-            margin-bottom: 8px;
+        .latest-card h3 { font-size: 16px; font-weight: 700; color: #002060; margin-bottom: 16px; }
+        .result-summary {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;
         }
-        .info-card p {
-            font-size: 14px;
-            color: #475569;
-            line-height: 1.7;
+        .summary-item { font-size: 14px; color: #1e293b; line-height: 1.8; }
+        .summary-item strong { color: #002060; }
+        .badge {
+            display: inline-block; padding: 3px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 700;
         }
-        .info-card .highlight {
-            background: #f0f4f8;
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 16px;
-            font-size: 13px;
-            color: #475569;
-            line-height: 1.7;
+        .badge.MALIGNANT { background: #fee2e2; color: #C84B31; }
+        .badge.BENIGN { background: #dcfce7; color: #2C6E49; }
+        .badge.HIGH { background: #fee2e2; color: #C84B31; }
+        .badge.INTERMEDIATE { background: #fef9c3; color: #854d0e; }
+        .badge.LOW { background: #dcfce7; color: #2C6E49; }
+        .history-card {
+            background: white; border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08); overflow: hidden;
+            margin-bottom: 24px;
         }
-        .result-card {
-            background: white;
-            border-radius: 16px;
-            padding: 32px;
+        .history-header {
+            padding: 20px 24px; font-size: 16px; font-weight: 700;
+            color: #002060; border-bottom: 2px solid #f0f4f8;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #002060; color: white; padding: 12px 16px;
+            font-size: 12px; text-align: left;
+        }
+        td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #f0f4f8; color: #475569; }
+        tr:hover td { background: #f8fafc; }
+        .no-results {
+            text-align: center; padding: 60px;
+            background: white; border-radius: 12px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
         }
-        .result-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
-            border-bottom: 2px solid #f0f4f8;
-        }
-        .result-date {
-            font-size: 13px;
-            color: #94a3b8;
-        }
-        .result-badge {
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 700;
-        }
-        .result-badge.normal {
-            background: #dcfce7;
-            color: #2C6E49;
-        }
-        .result-badge.attention {
-            background: #fee2e2;
-            color: #C84B31;
-        }
-        .result-badge.monitor {
-            background: #fef9c3;
-            color: #854d0e;
-        }
-        .result-message {
-            font-size: 16px;
-            color: #1e293b;
-            font-weight: 500;
-            margin-bottom: 12px;
-        }
-        .result-action {
-            font-size: 14px;
-            color: #475569;
-            line-height: 1.7;
-            background: #f8fafc;
-            padding: 14px;
-            border-radius: 8px;
-            border-left: 3px solid #F5A623;
+        .no-results-icon { font-size: 64px; margin-bottom: 16px; }
+        .no-results h3 { font-size: 20px; color: #002060; margin-bottom: 8px; }
+        .no-results p { font-size: 14px; color: #94a3b8; max-width: 400px; margin: 0 auto; }
+        .info-box {
+            background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px;
+            padding: 20px 24px; margin-bottom: 24px; font-size: 14px;
+            color: #0369a1; line-height: 1.7;
         }
         .disclaimer {
-            background: #fef9c3;
-            border: 1px solid #fde047;
-            border-radius: 8px;
-            padding: 14px 16px;
-            font-size: 12px;
-            color: #854d0e;
-            margin-top: 32px;
-            line-height: 1.6;
+            background: #fef9c3; border: 1px solid #fde047; border-radius: 8px;
+            padding: 14px 16px; font-size: 12px; color: #854d0e;
+            margin-top: 24px; line-height: 1.6;
         }
         footer {
-            background: #000d1a;
-            padding: 24px;
-            text-align: center;
-            margin-top: 48px;
+            background: #000d1a; padding: 24px; text-align: center; margin-top: 48px;
         }
-        footer p {
-            color: rgba(255,255,255,0.4);
-            font-size: 12px;
-            line-height: 1.8;
+        footer p { color: rgba(255,255,255,0.4); font-size: 12px; line-height: 1.8; }
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .result-summary { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -251,34 +132,118 @@
     <!-- HERO -->
     <section class="hero">
         <div class="hero-content">
-            <div class="hero-greeting">MY HEALTH PORTAL</div>
+            <div class="greeting">MY HEALTH PORTAL</div>
             <h1 class="hero-title">Hello, {{ user.name.split()[0] }} 👋</h1>
-            <p class="hero-sub">Welcome to your personal health results page. Here you can view your breast cancer screening results in a simple and easy to understand format.</p>
+            <p class="hero-sub">Welcome to your personal health results page. Your breast cancer screening results are shown below in a simple and easy to understand format.</p>
         </div>
     </section>
 
     <!-- CONTENT -->
     <div class="content">
 
-        <!-- Info Card -->
-        <div class="info-card">
-            <h3>📋 About Your Results</h3>
-            <p>Your results on this page are generated by our AI-powered Medical Decision Support System. The system analyses your mammogram scan together with your clinical information to give you a personalised assessment.</p>
-            <div class="highlight">
-                ⚠️ <strong>Important:</strong> These results are provided to help you understand your screening outcome. Always discuss your results with your doctor before making any health decisions. The AI system supports your doctor — it does not replace them.
-            </div>
+        {% if total == 0 %}
+
+        <!-- Info box -->
+        <div class="info-box">
+            ℹ️ <strong>How this works:</strong> When your doctor runs a breast cancer screening analysis for you using the MDSS system, your results will appear here automatically. Please visit your healthcare provider and ask them to run an analysis using MDSS.
         </div>
 
-        <!-- No results state -->
+        <!-- No results -->
         <div class="no-results">
             <div class="no-results-icon">🩻</div>
             <h3>No Results Yet</h3>
-            <p>Your doctor has not uploaded any screening results for you yet. Please visit your healthcare provider and ask them to run an analysis using the MDSS system.</p>
+            <p>Your doctor has not uploaded any screening results for you yet. Please visit your healthcare provider.</p>
         </div>
+
+        {% else %}
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🔬</div>
+                <div class="stat-num">{{ total }}</div>
+                <div class="stat-label">Total Screenings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🟢</div>
+                <div class="stat-num" style="color:#2C6E49;">{{ low_risk }}</div>
+                <div class="stat-label">Low Risk Results</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🟡</div>
+                <div class="stat-num" style="color:#F5A623;">{{ intermediate_risk }}</div>
+                <div class="stat-label">Medium Risk Results</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔴</div>
+                <div class="stat-num" style="color:#C84B31;">{{ high_risk }}</div>
+                <div class="stat-label">High Risk Results</div>
+            </div>
+        </div>
+
+        <!-- Latest Result -->
+        {% if latest %}
+        <div class="latest-card">
+            <h3>📋 Your Most Recent Screening — {{ latest.timestamp }}</h3>
+            <div class="result-summary">
+                <div class="summary-item">
+                    <strong>Result:</strong><br>
+                    <span class="badge {{ latest.prediction }}">{{ latest.prediction }}</span>
+                    <br><br>
+                    <strong>Confidence:</strong> {{ latest.confidence }}%
+                </div>
+                <div class="summary-item">
+                    <strong>Risk Level:</strong><br>
+                    <span class="badge {{ latest.risk_level }}">{{ latest.risk_level }} RISK</span>
+                    <br><br>
+                    <strong>Risk Score:</strong> {{ latest.risk_score }}%
+                </div>
+                <div class="summary-item">
+                    <strong>What this means:</strong><br>
+                    {% if latest.risk_level == 'LOW' %}
+                    Your screening looks reassuring. Continue with routine annual mammographic screening and maintain regular self-examination.
+                    {% elif latest.risk_level == 'INTERMEDIATE' %}
+                    Your screening requires a closer look. Please return for a follow-up mammogram in 6 months and speak to your doctor.
+                    {% else %}
+                    Your screening shows signs that need urgent attention. Please contact your doctor immediately for further investigation.
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Screening History Table -->
+        <div class="history-card">
+            <div class="history-header">📅 Full Screening History</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Result</th>
+                        <th>Confidence</th>
+                        <th>Risk Level</th>
+                        <th>Risk Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr>
+                        <td>{{ result.timestamp }}</td>
+                        <td><span class="badge {{ result.prediction }}">{{ result.prediction }}</span></td>
+                        <td>{{ result.confidence }}%</td>
+                        <td><span class="badge {{ result.risk_level }}">{{ result.risk_level }}</span></td>
+                        <td>{{ result.risk_score }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% endif %}
 
         <!-- Disclaimer -->
         <div class="disclaimer">
-            ⚠️ <strong>Medical Disclaimer:</strong> The information on this page is generated by an AI system and is intended for informational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of a qualified healthcare provider with any questions you may have regarding your health.
+            ⚠️ <strong>Medical Disclaimer:</strong> The information on this page is generated by an AI system and is intended for informational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of a qualified healthcare provider regarding your health.
         </div>
 
     </div>

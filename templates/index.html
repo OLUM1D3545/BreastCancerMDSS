@@ -166,6 +166,23 @@
                             </div>
                         </div>
 
+                        <!-- Patient Selector -->
+<div class="field" style="margin-bottom:20px;padding-bottom:20px;border-bottom:2px solid #f0f4f8;">
+    <div class="field-label-row">
+        <label>Select Patient <span class="required">*</span></label>
+        <div class="tooltip-wrap">
+            <div class="tooltip-icon">i</div>
+            <div class="tooltip-box">Select the patient this analysis is for. The result will be linked to their account and they can view it when they log in. If the patient does not have an account yet, ask them to register first.</div>
+        </div>
+    </div>
+    <select name="patient_id" id="patientSelect" required>
+        <option value="" disabled selected>Search and select a patient...</option>
+    </select>
+    <div style="font-size:12px;color:#94a3b8;margin-top:6px;">
+        Patient must have a registered account. <a href="/register" target="_blank" style="color:#028090;">Register new patient →</a>
+    </div>
+</div>
+
                         <div class="fields">
 
     <div class="field-row">
