@@ -16,17 +16,32 @@ const uploadArea = document.getElementById('uploadArea');
 
 if (imageInput) {
     imageInput.addEventListener('change', function () {
-        const file = this.files[0];
-        if (file) {
-            // Show the image preview
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                previewImg.src = e.target.result;
-                fileName.textContent = file.name;
-                uploadPlaceholder.style.display = 'none';
-                uploadPreview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
+        const files = this.files;
+        if (files.length > 0) {
+            uploadPlaceholder.style.display = 'none';
+            uploadPreview.style.display = 'block';
+
+            const previewGrid = document.getElementById('previewGrid');
+            previewGrid.innerHTML = '';
+
+            // Show preview for each uploaded image (max 4)
+            const maxFiles = Math.min(files.length, 4);
+            for (let i = 0; i < maxFiles; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgWrapper = document.createElement('div');
+                    imgWrapper.style.cssText = 'position:relative;';
+                    imgWrapper.innerHTML = `
+                        <img src="${e.target.result}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;background:#000;">
+                        <div style="font-size:11px;color:#475569;margin-top:4px;text-align:center;">${file.name.length > 20 ? file.name.substring(0, 20) + '...' : file.name}</div>
+                    `;
+                    previewGrid.appendChild(imgWrapper);
+                };
+                reader.readAsDataURL(file);
+            }
+
+            fileName.textContent = `${files.length} file${files.length > 1 ? 's' : ''} selected`;
         }
     });
 }

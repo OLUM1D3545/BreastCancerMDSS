@@ -140,22 +140,21 @@
                         </div>
 
                         <div class="upload-area" id="uploadArea">
-                            <input type="file" name="image" id="imageInput" accept="image/*" required hidden>
-                            <div class="upload-placeholder" id="uploadPlaceholder">
-                                <div class="upload-icon">📂</div>
-                                <p class="upload-title">Click to upload mammogram</p>
-                                <p class="upload-sub">Supports JPEG, PNG, DICOM formats</p>
-                                <button type="button" class="btn-upload" onclick="document.getElementById('imageInput').click()">Choose File</button>
-                            </div>
-                            <div class="upload-preview" id="uploadPreview" style="display:none;">
-                                <img id="previewImg" src="" alt="Mammogram Preview">
-                                <div class="preview-info">
-                                    <span id="fileName">No file selected</span>
-                                    <button type="button" class="btn-change" onclick="document.getElementById('imageInput').click()">Change</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <input type="file" name="images" id="imageInput" accept="image/*" multiple required hidden>
+    <div class="upload-placeholder" id="uploadPlaceholder">
+        <div class="upload-icon">📂</div>
+        <p class="upload-title">Click to upload mammogram(s)</p>
+        <p class="upload-sub">Upload up to 4 images — left breast, right breast, or comparison scans</p>
+        <button type="button" class="btn-upload" onclick="document.getElementById('imageInput').click()">Choose Files</button>
+    </div>
+    <div class="upload-preview" id="uploadPreview" style="display:none;">
+        <div id="previewGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;"></div>
+        <div class="preview-info" style="margin-top:10px;">
+            <span id="fileName">No files selected</span>
+            <button type="button" class="btn-change" onclick="document.getElementById('imageInput').click()">Change</button>
+        </div>
+    </div>
+</div>
 
                     <!-- RIGHT: Clinical Data -->
                     <div class="form-card">

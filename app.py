@@ -230,21 +230,32 @@ def index():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if 'image' not in request.files:
+       # ── Step 1: Get uploaded images ──
+    if 'images' not in request.files:
         return 'No image uploaded.', 400
 
-    file = request.files['image']
+    files = request.files.getlist('images')
+    files = [f for f in files if f.filename != '']
 
-    if file.filename == '':
-        return 'No file selected.', 400
-
-    if not allowed_file(file.filename):
-        return 'Invalid file type.', 400
+    if not files:
+        return 'No files selected.', 400
 
     timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
-    original_filename = f'mammogram_{timestamp_str}.jpg'
-    image_path = os.path.join(UPLOAD_FOLDER, original_filename)
-    file.save(image_path)
+
+    # Save all uploaded images
+    image_paths = []
+    for i, file in enumerate(files[:4]):  # Max 4 images
+        if allowed_file(file.filename):
+            filename = f'mammogram_{timestamp_str}_{i}.jpg'
+            image_path = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(image_path)
+            image_paths.append(image_path)
+
+    if not image_paths:
+        return 'Invalid file type.', 400
+
+    # Use first image as primary for main analysis
+    image_path = image_paths[0]
 
     clinical_features = {
         'age':            int(request.form.get('age', 45)),
@@ -256,11 +267,17 @@ def predict():
         'notes':          request.form.get('notes', ''),
     }
 
-    img_array, original_img = load_and_preprocess_image(image_path)
+        img_array, original_img = load_and_preprocess_image(image_path)
     prediction, confidence, risk_score = predict_with_model(img_array, clinical_features)
 
-    heatmap_filename = f'heatmap_{timestamp_str}.jpg'
-    generate_gradcam_heatmap(image_path, prediction, heatmap_filename)
+    # Generate heatmaps for all uploaded images
+    heatmap_filenames = []
+    for i, img_path in enumerate(image_paths):
+        heatmap_filename = f'heatmap_{timestamp_str}_{i}.jpg'
+        generate_gradcam_heatmap(img_path, prediction, heatmap_filename)
+        heatmap_filenames.append(heatmap_filename)
+
+    heatmap_filename = heatmap_filenames[0]
 
     shap_features = compute_shap_values(clinical_features, prediction)
     risk_level, risk_color, recommendation, risk_percentage = compute_risk_level(
@@ -301,7 +318,7 @@ def predict():
     except Exception as e:
         print(f'Database error: {e}')
 
-    return render_template(
+        return render_template(
         'result.html',
         prediction=prediction,
         prediction_class=prediction_class,
@@ -311,6 +328,8 @@ def predict():
         risk_score=risk_percentage,
         recommendation=recommendation,
         heatmap_filename=heatmap_filename,
+        heatmap_filenames=heatmap_filenames,
+        image_count=len(image_paths),
         shap_features=shap_features,
         age=clinical_features['age'],
         birads=clinical_features['birads'],

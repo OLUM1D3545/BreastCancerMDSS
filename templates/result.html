@@ -106,13 +106,35 @@
             <div class="results-grid">
 
                 <!-- Grad-CAM Card -->
-                <div class="result-card">
-                    <div class="result-card-title">Grad-CAM Visual Explanation</div>
-                    <img
-                        src="{{ url_for('static', filename='uploads/' + heatmap_filename) }}"
-                        alt="Grad-CAM Heatmap"
-                        class="heatmap-img"
-                    >
+                <!-- Grad-CAM Card -->
+<div class="result-card">
+    <div class="result-card-title">Grad-CAM Visual Explanation</div>
+
+    {% if image_count > 1 %}
+    <div style="font-size:13px;color:#475569;margin-bottom:12px;">
+        {{ image_count }} mammogram images analysed. Heatmaps shown below:
+    </div>
+    <div style="display:grid;grid-template-columns:repeat({{ '2' if image_count > 1 else '1' }},1fr);gap:12px;margin-bottom:16px;">
+        {% for heatmap in heatmap_filenames %}
+        <div>
+            <img
+                src="{{ url_for('static', filename='uploads/' + heatmap) }}"
+                alt="Grad-CAM Heatmap {{ loop.index }}"
+                style="width:100%;border-radius:8px;object-fit:contain;background:#000;max-height:180px;"
+            >
+            <div style="font-size:11px;color:#94A3B8;text-align:center;margin-top:4px;">
+                Image {{ loop.index }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <img
+        src="{{ url_for('static', filename='uploads/' + heatmap_filename) }}"
+        alt="Grad-CAM Heatmap"
+        class="heatmap-img"
+    >
+    {% endif %}
                     <div class="heatmap-note">
                         🔴 Red/orange regions indicate areas the CNN focused on most when making its prediction.
                     </div>
