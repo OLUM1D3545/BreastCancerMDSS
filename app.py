@@ -58,7 +58,7 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# ── Database Model ──
+# ── Analysis Result Model ──
 class AnalysisResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.String(100), nullable=False)
@@ -73,6 +73,9 @@ class AnalysisResult(db.Model):
     risk_level = db.Column(db.String(20), nullable=False)
     risk_score = db.Column(db.Float, nullable=False)
     heatmap_filename = db.Column(db.String(200), nullable=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
 
 # ── Create tables ──
 with app.app_context():
@@ -298,7 +301,9 @@ def predict():
     timestamp_display = datetime.now().strftime('%d %B %Y, %H:%M')
 
     # Save to database
+        # Save to database
     try:
+        patient_id = request.form.get('patient_id')
         new_result = AnalysisResult(
             timestamp=timestamp_display,
             age=clinical_features['age'],
@@ -311,35 +316,15 @@ def predict():
             confidence=confidence,
             risk_level=risk_level,
             risk_score=risk_percentage,
-            heatmap_filename=heatmap_filename
+            heatmap_filename=heatmap_filename,
+            patient_id=int(patient_id) if patient_id else None,
+            doctor_id=current_user.id,
+            notes=clinical_features.get('notes', '')
         )
         db.session.add(new_result)
         db.session.commit()
     except Exception as e:
         print(f'Database error: {e}')
-
-        return render_template(
-        'result.html',
-        prediction=prediction,
-        prediction_class=prediction_class,
-        confidence=confidence,
-        risk_level=risk_level,
-        risk_color=risk_color,
-        risk_score=risk_percentage,
-        recommendation=recommendation,
-        heatmap_filename=heatmap_filename,
-        heatmap_filenames=heatmap_filenames,
-        image_count=len(image_paths),
-        shap_features=shap_features,
-        age=clinical_features['age'],
-        birads=clinical_features['birads'],
-        family_history=family_history_display,
-        density=density_display,
-        menopause=menopause_display,
-        prior_biopsy=prior_biopsy_display,
-        timestamp=timestamp_display,
-    )
-
 
 @app.route('/dashboard')
 @login_required
@@ -593,7 +578,57 @@ def logout():
 def patient_dashboard():
     if current_user.role != 'patient':
         return redirect('/')
-    return render_template('patient_dashboard.html', user=current_user)
+
+    results = AnalysisResult.query.filter_by(
+        patient_id=current_user.id
+    ).order_by(AnalysisResult.id.desc()).all()
+
+    return render_template(
+        'patient_dashboard.html',
+        user=current_user,
+        results=results,
+        total=len(results),
+        latest=results[0] if results else None,
+        high_risk=sum(1 for r in results if r.risk_level == 'HIGH'),
+        intermediate_risk=sum(1 for r in results if r.risk_level == 'INTERMEDIATE'),
+        low_risk=sum(1 for r in results if r.risk_level == 'LOW'),
+    )
+
+# ── Get all patients for dropdown ──
+@app.route('/get-patients')
+@login_required
+def get_patients():
+    from flask import jsonify
+    patients = User.query.filter_by(role='patient').all()
+    return jsonify([{
+        'id': p.id,
+        'name': p.name,
+        'email': p.email
+    } for p in patients])
+
+
+# ── Patient History Route ──
+@app.route('/patient-history/<int:patient_id>')
+@login_required
+def patient_history(patient_id):
+    if current_user.role == 'patient' and current_user.id != patient_id:
+        return redirect('/patient-dashboard')
+
+    patient = User.query.get_or_404(patient_id)
+    results = AnalysisResult.query.filter_by(
+        patient_id=patient_id
+    ).order_by(AnalysisResult.id.desc()).all()
+
+    return render_template(
+        'patient_history.html',
+        patient=patient,
+        results=results,
+        total=len(results),
+        high_risk=sum(1 for r in results if r.risk_level == 'HIGH'),
+        intermediate_risk=sum(1 for r in results if r.risk_level == 'INTERMEDIATE'),
+        low_risk=sum(1 for r in results if r.risk_level == 'LOW'),
+        latest=results[0] if results else None
+    )
 
 # ── Run ──
 if __name__ == '__main__':
@@ -603,3 +638,5 @@ if __name__ == '__main__':
     print(" http://localhost:5000") 
     print("=" * 50)
     app.run(debug=True, port=5000)
+
+    

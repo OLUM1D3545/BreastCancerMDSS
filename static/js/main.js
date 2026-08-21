@@ -400,3 +400,24 @@ window.addEventListener('load', function() {
         setTimeout(speakResult, 1500);
     }
 });
+// ── Load Patients into Dropdown ──
+function loadPatients() {
+    const select = document.getElementById('patientSelect');
+    if (!select) return;
+
+    fetch('/get-patients')
+        .then(res => res.json())
+        .then(patients => {
+            select.innerHTML = '<option value="" disabled selected>Select a patient...</option>';
+            if (patients.length === 0) {
+                select.innerHTML += '<option disabled>No patients registered yet</option>';
+            } else {
+                patients.forEach(p => {
+                    select.innerHTML += `<option value="${p.id}">${p.name} (${p.email})</option>`;
+                });
+            }
+        })
+        .catch(err => console.log('Could not load patients:', err));
+}
+
+loadPatients();
