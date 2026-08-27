@@ -1,11 +1,12 @@
 # ═══════════════════════════════════════
 # MDSS - Breast Cancer Detection System
 # Flask Backend - app.py
-
 # ═══════════════════════════════════════
 
-from flask import Flask, render_template, request, url_for, send_file, redirect, flash, session
+from flask import Flask, render_template, request, url_for, send_file, redirect
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_bcrypt import Bcrypt
 import os
 import numpy as np
 from PIL import Image
@@ -15,10 +16,6 @@ matplotlib.use('Agg')
 import matplotlib.cm as cm
 import io
 from fpdf import FPDF
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from flask_bcrypt import Bcrypt
-from flask import Flask, render_template, request, url_for, send_file
-
 
 # ── Create Flask App ──
 app = Flask(__name__)
@@ -32,20 +29,22 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'md
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'mdss-aaua-subgroup3-secret-key'
 
-# ── Database ──
+# ── Extensions ──
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
-login_manager.login_message = 'Please login to access this page.'
 
-# ── Make sure upload folder exists ──
+# ── Upload folder ──
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# ── Allowed file types ──
+# ── Allowed files ──
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'dcm', 'bmp'}
 
-# ── User Model ──
+# ══════════════════════════════════════════════
+# DATABASE MODELS
+# ══════════════════════════════════════════════
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -58,7 +57,6 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# ── Analysis Result Model ──
 class AnalysisResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.String(100), nullable=False)
@@ -73,17 +71,13 @@ class AnalysisResult(db.Model):
     risk_level = db.Column(db.String(20), nullable=False)
     risk_score = db.Column(db.Float, nullable=False)
     heatmap_filename = db.Column(db.String(200), nullable=True)
-    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    notes = db.Column(db.Text, nullable=True)
 
-# ── Create tables ──
 with app.app_context():
     try:
         db.create_all()
-        print("Database tables created successfully")
+        print('Database ready')
     except Exception as e:
-        print(f"Database creation error: {e}")
+        print(f'Database error: {e}')
 
 
 # ══════════════════════════════════════════════
@@ -93,14 +87,12 @@ with app.app_context():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
 def load_and_preprocess_image(image_path):
     img = Image.open(image_path).convert('RGB')
     img = img.resize((224, 224))
     img_array = np.array(img) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
     return img_array, img
-
 
 def predict_with_model(img_array, clinical_features):
     birads = clinical_features['birads']
@@ -127,7 +119,6 @@ def predict_with_model(img_array, clinical_features):
 
     return prediction, confidence, risk_score
 
-
 def generate_gradcam_heatmap(image_path, prediction, output_filename):
     img = Image.open(image_path).convert('RGB')
     h, w = 224, 224
@@ -145,7 +136,6 @@ def generate_gradcam_heatmap(image_path, prediction, output_filename):
                 heatmap[i, j] = np.exp(-dist / (2 * (radius/2)**2))
 
     heatmap = (heatmap - heatmap.min()) / (heatmap.max() - heatmap.min() + 1e-8)
-
     if prediction == 'BENIGN':
         heatmap *= 0.5
 
@@ -158,9 +148,7 @@ def generate_gradcam_heatmap(image_path, prediction, output_filename):
 
     output_path = os.path.join(UPLOAD_FOLDER, output_filename)
     Image.fromarray(overlay).save(output_path)
-
     return output_filename
-
 
 def compute_shap_values(clinical_features, prediction):
     birads = clinical_features['birads']
@@ -187,10 +175,8 @@ def compute_shap_values(clinical_features, prediction):
         {'name': 'Menopausal Status', 'value': f'+{menopause_val}', 'percentage': round(menopause_val / total * 100)},
         {'name': 'Prior Biopsy', 'value': f'+{biopsy_val}', 'percentage': round(biopsy_val / total * 100)},
     ]
-
     shap_features.sort(key=lambda x: x['percentage'], reverse=True)
     return shap_features
-
 
 def compute_risk_level(risk_score, birads):
     combined_risk = risk_score * 0.7 + (birads / 6) * 0.3
@@ -199,25 +185,15 @@ def compute_risk_level(risk_score, birads):
     if combined_risk < 0.30:
         risk_level = 'LOW'
         risk_color = '#2C6E49'
-        recommendation = (
-            'Routine annual mammographic screening is recommended. '
-            'No immediate clinical intervention required. '
-            'Advise patient to maintain regular self-examination.'
-        )
+        recommendation = 'Routine annual mammographic screening is recommended. No immediate clinical intervention required. Advise patient to maintain regular self-examination.'
     elif combined_risk < 0.70:
         risk_level = 'INTERMEDIATE'
         risk_color = '#F5A623'
-        recommendation = (
-            'Short-interval follow-up mammography in 6 months is recommended. '
-            'Consider referral to a breast specialist for further evaluation.'
-        )
+        recommendation = 'Short-interval follow-up mammography in 6 months is recommended. Consider referral to a breast specialist for further evaluation.'
     else:
         risk_level = 'HIGH'
         risk_color = '#C84B31'
-        recommendation = (
-            'Immediate referral for core needle biopsy is strongly recommended. '
-            'Urgent specialist review by an oncologist or breast surgeon is advised.'
-        )
+        recommendation = 'Immediate referral for core needle biopsy is strongly recommended. Urgent specialist review by an oncologist or breast surgeon is advised.'
 
     return risk_level, risk_color, recommendation, risk_percentage
 
@@ -231,9 +207,72 @@ def compute_risk_level(risk_score, birads):
 def index():
     return render_template('index.html', user=current_user)
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        if current_user.role == 'patient':
+            return redirect('/patient-dashboard')
+        return redirect('/')
+
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        user = User.query.filter_by(email=email).first()
+        if user and bcrypt.check_password_hash(user.password, password):
+            login_user(user)
+            if user.role == 'patient':
+                return redirect('/patient-dashboard')
+            return redirect('/')
+        return render_template('login.html', error='Invalid email or password.')
+
+    return render_template('login.html', error=None)
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect('/')
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        role = request.form.get('role', 'patient')
+
+        if User.query.filter_by(email=email).first():
+            return render_template('register.html', error='An account with this email already exists.')
+
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        new_user = User(
+            name=name, email=email,
+            password=hashed_password, role=role,
+            created_at=datetime.now().strftime('%d %B %Y')
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        login_user(new_user)
+
+        if role == 'patient':
+            return redirect('/patient-dashboard')
+        return redirect('/')
+
+    return render_template('register.html', error=None)
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect('/login')
+
+@app.route('/patient-dashboard')
+@login_required
+def patient_dashboard():
+    if current_user.role != 'patient':
+        return redirect('/')
+    return render_template('patient_dashboard.html', user=current_user)
+
 @app.route('/predict', methods=['POST'])
+@login_required
 def predict():
-       # ── Step 1: Get uploaded images ──
     if 'images' not in request.files:
         return 'No image uploaded.', 400
 
@@ -244,10 +283,9 @@ def predict():
         return 'No files selected.', 400
 
     timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
-
-    # Save all uploaded images
     image_paths = []
-    for i, file in enumerate(files[:4]):  # Max 4 images
+
+    for i, file in enumerate(files[:4]):
         if allowed_file(file.filename):
             filename = f'mammogram_{timestamp_str}_{i}.jpg'
             image_path = os.path.join(UPLOAD_FOLDER, filename)
@@ -257,7 +295,6 @@ def predict():
     if not image_paths:
         return 'Invalid file type.', 400
 
-    # Use first image as primary for main analysis
     image_path = image_paths[0]
 
     clinical_features = {
@@ -270,10 +307,9 @@ def predict():
         'notes':          request.form.get('notes', ''),
     }
 
-        img_array, original_img = load_and_preprocess_image(image_path)
+    img_array, original_img = load_and_preprocess_image(image_path)
     prediction, confidence, risk_score = predict_with_model(img_array, clinical_features)
 
-    # Generate heatmaps for all uploaded images
     heatmap_filenames = []
     for i, img_path in enumerate(image_paths):
         heatmap_filename = f'heatmap_{timestamp_str}_{i}.jpg'
@@ -281,7 +317,6 @@ def predict():
         heatmap_filenames.append(heatmap_filename)
 
     heatmap_filename = heatmap_filenames[0]
-
     shap_features = compute_shap_values(clinical_features, prediction)
     risk_level, risk_color, recommendation, risk_percentage = compute_risk_level(
         risk_score, clinical_features['birads']
@@ -291,19 +326,11 @@ def predict():
     family_history_display = 'Yes' if clinical_features['family_history'] == 1 else 'No'
     menopause_display = 'Post-menopausal' if clinical_features['menopause'] == 1 else 'Pre-menopausal'
     prior_biopsy_display = 'Yes' if clinical_features['prior_biopsy'] == 1 else 'No'
-    density_map = {
-        1: 'A (Almost entirely fatty)',
-        2: 'B (Scattered density)',
-        3: 'C (Heterogeneously dense)',
-        4: 'D (Extremely dense)'
-    }
+    density_map = {1: 'A (Almost entirely fatty)', 2: 'B (Scattered density)', 3: 'C (Heterogeneously dense)', 4: 'D (Extremely dense)'}
     density_display = density_map.get(clinical_features['density'], 'B')
     timestamp_display = datetime.now().strftime('%d %B %Y, %H:%M')
 
-    # Save to database
-        # Save to database
     try:
-        patient_id = request.form.get('patient_id')
         new_result = AnalysisResult(
             timestamp=timestamp_display,
             age=clinical_features['age'],
@@ -316,23 +343,40 @@ def predict():
             confidence=confidence,
             risk_level=risk_level,
             risk_score=risk_percentage,
-            heatmap_filename=heatmap_filename,
-            patient_id=int(patient_id) if patient_id else None,
-            doctor_id=current_user.id,
-            notes=clinical_features.get('notes', '')
+            heatmap_filename=heatmap_filename
         )
         db.session.add(new_result)
         db.session.commit()
     except Exception as e:
         print(f'Database error: {e}')
 
+    return render_template(
+        'result.html',
+        prediction=prediction,
+        prediction_class=prediction_class,
+        confidence=confidence,
+        risk_level=risk_level,
+        risk_color=risk_color,
+        risk_score=risk_percentage,
+        recommendation=recommendation,
+        heatmap_filename=heatmap_filename,
+        heatmap_filenames=heatmap_filenames,
+        image_count=len(image_paths),
+        shap_features=shap_features,
+        age=clinical_features['age'],
+        birads=clinical_features['birads'],
+        family_history=family_history_display,
+        density=density_display,
+        menopause=menopause_display,
+        prior_biopsy=prior_biopsy_display,
+        timestamp=timestamp_display,
+    )
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
     try:
-        all_results = AnalysisResult.query.order_by(
-            AnalysisResult.id.desc()
-        ).all()
+        all_results = AnalysisResult.query.order_by(AnalysisResult.id.desc()).all()
         total = len(all_results)
         malignant = sum(1 for r in all_results if r.prediction == 'MALIGNANT')
         benign = total - malignant
@@ -353,23 +397,11 @@ def dashboard():
             low_risk=low_risk,
         )
     except Exception as e:
-       import traceback
-       return f'Dashboard error: {traceback.format_exc()}', 500
-
-    return render_template(
-        'dashboard.html',
-        all_results=all_results,
-        total=total,
-        malignant=malignant,
-        benign=benign,
-        avg_risk=avg_risk,
-        high_risk=high_risk,
-        intermediate_risk=intermediate_risk,
-        low_risk=low_risk,
-    )
-
+        import traceback
+        return f'Dashboard error: {traceback.format_exc()}', 500
 
 @app.route('/download-report', methods=['POST'])
+@login_required
 def download_report():
     prediction = request.form.get('prediction', 'UNKNOWN')
     confidence = request.form.get('confidence', '0')
@@ -433,16 +465,14 @@ def download_report():
     pdf.cell(0, 8, 'PATIENT INFORMATION', ln=True)
     pdf.ln(2)
 
-    patient_info = [
+    for label, value in [
         ('Patient Age', f'{age} years'),
         ('BI-RADS Category', f'Category {birads}'),
         ('Family History', family_history),
         ('Breast Density', density),
         ('Menopausal Status', menopause),
         ('Prior Biopsy', prior_biopsy),
-    ]
-
-    for label, value in patient_info:
+    ]:
         pdf.set_x(20)
         pdf.set_font('Helvetica', 'B', 10)
         pdf.set_text_color(0, 0, 0)
@@ -481,10 +511,7 @@ def download_report():
     pdf.set_x(20)
     pdf.set_font('Helvetica', 'I', 9)
     pdf.set_text_color(100, 100, 100)
-    pdf.multi_cell(170, 5,
-        'DISCLAIMER: This AI-generated report is intended to support, not replace, '
-        'clinical judgement. All findings should be reviewed by a qualified healthcare professional.'
-    )
+    pdf.multi_cell(170, 5, 'DISCLAIMER: This AI-generated report is intended to support, not replace, clinical judgement. All findings should be reviewed by a qualified healthcare professional.')
 
     pdf.set_fill_color(0, 32, 96)
     pdf.rect(0, 285, 210, 12, 'F')
@@ -505,138 +532,11 @@ def download_report():
         download_name=f'MDSS_Report_{timestamp_str if "timestamp_str" in dir() else "report"}.pdf'
     )
 
-# ── Login Route ──
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-        if current_user.role == 'patient':
-            return redirect('/patient-dashboard')
-        return redirect('/')
-
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        user = User.query.filter_by(email=email).first()
-
-        if user and bcrypt.check_password_hash(user.password, password):
-            login_user(user)
-            if user.role == 'patient':
-                return redirect('/patient-dashboard')
-            return redirect('/')
-        else:
-            return render_template('login.html', error='Invalid email or password. Please try again.')
-
-    return render_template('login.html', error=None)
-
-
-# ── Register Route ──
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if current_user.is_authenticated:
-        return redirect('/')
-
-    if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        role = request.form.get('role', 'patient')
-
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            return render_template('register.html', error='An account with this email already exists.')
-
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-        new_user = User(
-            name=name,
-            email=email,
-            password=hashed_password,
-            role=role,
-            created_at=datetime.now().strftime('%d %B %Y')
-        )
-        db.session.add(new_user)
-        db.session.commit()
-        login_user(new_user)
-
-        if role == 'patient':
-            return redirect('/patient-dashboard')
-        return redirect('/')
-
-    return render_template('register.html', error=None)
-
-
-# ── Logout Route ──
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect('/login')
-
-
-# ── Patient Dashboard Route ──
-@app.route('/patient-dashboard')
-@login_required
-def patient_dashboard():
-    if current_user.role != 'patient':
-        return redirect('/')
-
-    results = AnalysisResult.query.filter_by(
-        patient_id=current_user.id
-    ).order_by(AnalysisResult.id.desc()).all()
-
-    return render_template(
-        'patient_dashboard.html',
-        user=current_user,
-        results=results,
-        total=len(results),
-        latest=results[0] if results else None,
-        high_risk=sum(1 for r in results if r.risk_level == 'HIGH'),
-        intermediate_risk=sum(1 for r in results if r.risk_level == 'INTERMEDIATE'),
-        low_risk=sum(1 for r in results if r.risk_level == 'LOW'),
-    )
-
-# ── Get all patients for dropdown ──
-@app.route('/get-patients')
-@login_required
-def get_patients():
-    from flask import jsonify
-    patients = User.query.filter_by(role='patient').all()
-    return jsonify([{
-        'id': p.id,
-        'name': p.name,
-        'email': p.email
-    } for p in patients])
-
-
-# ── Patient History Route ──
-@app.route('/patient-history/<int:patient_id>')
-@login_required
-def patient_history(patient_id):
-    if current_user.role == 'patient' and current_user.id != patient_id:
-        return redirect('/patient-dashboard')
-
-    patient = User.query.get_or_404(patient_id)
-    results = AnalysisResult.query.filter_by(
-        patient_id=patient_id
-    ).order_by(AnalysisResult.id.desc()).all()
-
-    return render_template(
-        'patient_history.html',
-        patient=patient,
-        results=results,
-        total=len(results),
-        high_risk=sum(1 for r in results if r.risk_level == 'HIGH'),
-        intermediate_risk=sum(1 for r in results if r.risk_level == 'INTERMEDIATE'),
-        low_risk=sum(1 for r in results if r.risk_level == 'LOW'),
-        latest=results[0] if results else None
-    )
 
 # ── Run ──
 if __name__ == '__main__':
     print("=" * 50)
     print(" MDSS - Breast Cancer Detection System")
-    print(" Subgroup 3 - AAUA CSC Dept")
-    print(" http://localhost:5000") 
+    print(" http://localhost:5000")
     print("=" * 50)
     app.run(debug=True, port=5000)
-
-    
