@@ -1,4 +1,5 @@
-venv/ 
-__pycache__/ 
-*.pyc 
-static/uploads/ 
+venv/
+__pycache__/
+*.pyc
+static/uploads/
+mdss.db
