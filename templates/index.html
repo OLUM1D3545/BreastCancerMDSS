@@ -1,933 +1,2143 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MDSS - Breast Cancer Detection System</title>
+
+    <title>New Patient Analysis | MDSS</title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 
+
+
     <style>
+
     /* ── Tooltip Styles ── */
+
     .field-label-row {
+
         display: flex;
+
         align-items: center;
+
         gap: 6px;
+
         margin-bottom: 6px;
+
     }
+
+
 
     .field-label-row label {
+
         margin-bottom: 0;
+
     }
+
+
 
     .tooltip-wrap {
+
         position: relative;
+
         display: inline-flex;
+
         align-items: center;
+
     }
+
+
 
     .tooltip-icon {
+
         width: 18px;
+
         height: 18px;
+
         background: #028090;
+
         color: white;
+
         border-radius: 50%;
+
         font-size: 11px;
+
         font-weight: 700;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         cursor: pointer;
+
         flex-shrink: 0;
+
         user-select: none;
+
         transition: background 0.2s;
+
     }
+
+
 
     .tooltip-icon:hover {
+
         background: #002060;
+
     }
+
+
 
     .tooltip-box {
+
         display: none;
+
         position: absolute;
+
         left: 26px;
+
         top: 50%;
+
         transform: translateY(-50%);
+
         background: #1E293B;
+
         color: #F8FAFC;
+
         font-size: 12px;
+
         line-height: 1.6;
+
         padding: 10px 14px;
+
         border-radius: 8px;
+
         width: 240px;
+
         z-index: 999;
+
         box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+
         pointer-events: none;
+
     }
+
+
 
     .tooltip-box::before {
+
         content: '';
+
         position: absolute;
+
         left: -6px;
+
         top: 50%;
+
         transform: translateY(-50%);
+
         border: 6px solid transparent;
+
         border-right-color: #1E293B;
+
         border-left: 0;
+
     }
+
+
 
     .tooltip-wrap:hover .tooltip-box,
+
     .tooltip-wrap.active .tooltip-box {
+
         display: block;
+
     }
-    </style>
+
+    
+    /* Shared MDSS professional sidebar layout */
+    .app-shell{min-height:100vh}
+    .sidebar{position:fixed;inset:0 auto 0 0;width:250px;background:linear-gradient(180deg,#082f5b,#041e38);color:#fff;padding:24px 15px;display:flex;flex-direction:column;z-index:100;overflow-y:auto;text-align:left}
+    .brand{display:flex;align-items:center;gap:12px;padding:0 12px 28px;border-bottom:1px solid #ffffff26}
+    .brand-logo{width:52px;height:52px;border-radius:50%;background:#fff;display:grid;place-items:center;overflow:hidden;flex-shrink:0}
+    .brand-logo img{width:100%;height:100%;object-fit:contain;padding:3px}
+    .brand-name{font-size:22px;font-weight:800;letter-spacing:.5px;color:#fff;display:block}
+    .brand-sub{font-size:10px;line-height:1.5;color:#c6d8e8;margin-top:3px;display:block}
+    .nav-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#8daac3;margin:25px 13px 10px}
+    .side-nav{display:grid;gap:7px}
+    .side-nav a{display:flex;align-items:center;gap:13px;padding:13px 14px;border-radius:10px;text-decoration:none;color:#dceafa;font-size:13px;font-weight:600;transition:.2s}
+    .side-nav a:hover,.side-nav a.active{background:linear-gradient(100deg,#087cc1,#07539a);color:white;box-shadow:0 5px 15px #001a3328}
+    .nav-icon{width:22px;text-align:center;font-size:18px}
+    .sidebar-note{margin-top:auto;padding:18px 15px;border:1px solid #ffffff24;border-radius:15px;background:linear-gradient(145deg,#ffffff0e,#ffffff04);color:#fff}
+    .sidebar-note strong{display:block;font-size:13px;margin-bottom:7px;color:#fff}.sidebar-note p{font-size:11px;line-height:1.7;color:#c2d6e8;margin:0}
+    .main{margin-left:250px;min-width:0;min-height:100vh}
+    .index-page .form-section{padding-top:42px}
+    .index-page .container{max-width:1500px;width:100%;padding-left:clamp(16px,3vw,38px);padding-right:clamp(16px,3vw,38px)}
+    @media(max-width:1150px){.sidebar{width:220px}.main{margin-left:220px}}
+    @media(max-width:760px){.sidebar{position:relative;width:100%;padding:14px;min-height:auto}.brand{padding:0 6px 14px}.brand-logo{width:42px;height:42px}.brand-name{font-size:18px}.nav-label{margin:14px 8px 8px}.side-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.side-nav a{padding:10px;font-size:11px}.sidebar-note{display:none}.main{margin-left:0}.index-page .form-section{padding-top:22px}.index-page .container{padding-left:12px;padding-right:12px}}
+
+
+  /* Floating MDSS chatbot */
+.mdss-chat-launcher{position:fixed;right:24px;bottom:22px;z-index:2147483000;width:60px;height:60px;border:3px solid #fff;border-radius:50%;background:#fff;padding:3px;box-shadow:0 10px 28px #082f5b45;cursor:pointer;display:grid;place-items:center;overflow:hidden;transition:transform .25s ease,box-shadow .25s ease}
+  .mdss-chat-launcher img{width:100%;height:100%;object-fit:contain;border-radius:50%;display:block}
+  .mdss-chat-launcher:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 14px 32px #082f5b55}
+  .mdss-chat-panel{position:fixed;right:24px;bottom:94px;z-index:2147483001;width:min(370px,calc(100vw - 28px));height:min(530px,calc(100vh - 125px));background:#fff;border:1px solid #dce8f1;border-radius:18px;box-shadow:0 18px 55px #082f5b30;display:flex;overflow:hidden;flex-direction:column;font-family:Inter,Arial,sans-serif;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(18px) scale(.96);transform-origin:bottom right;transition:opacity .24s ease,transform .28s cubic-bezier(.2,.8,.2,1),visibility .28s ease}
+  .mdss-chat-panel.open{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0) scale(1)}
+  .mdss-chat-head{background:linear-gradient(120deg,#082f5b,#087cc1);color:#fff;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .mdss-chat-brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .mdss-chat-logo{width:38px;height:38px;flex:0 0 38px;background:#fff;border-radius:50%;padding:3px;object-fit:contain}
+  .mdss-chat-brand-copy{min-width:0}
+  .mdss-chat-head{background:linear-gradient(120deg,#082f5b,#087cc1);color:#fff;padding:15px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .mdss-chat-head strong{font-size:14px;display:block}.mdss-chat-head small{display:block;font-size:10px;opacity:.85;margin-top:4px}
+  .mdss-chat-close{border:1px solid #ffffff55;background:#ffffff18;color:white;border-radius:8px;width:31px;height:31px;cursor:pointer;font-size:18px}
+  .mdss-chat-body{padding:14px;overflow-y:auto;flex:1;background:#f5f9fc;display:flex;flex-direction:column;gap:10px}
+  .mdss-chat-msg{max-width:91%;white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 12px;border-radius:12px;font-size:12px;line-height:1.55}
+  .mdss-chat-msg.bot{align-self:flex-start;background:#fff;color:#28445d;border:1px solid #e1ebf3;border-top-left-radius:4px}
+  .mdss-chat-msg.user{align-self:flex-end;background:#087cc1;color:#fff;border-top-right-radius:4px}
+  .mdss-chat-prompts{display:flex;flex-wrap:wrap;gap:6px}.mdss-chat-prompts button{border:1px solid #cfe2f0;background:#fff;color:#075b91;border-radius:20px;padding:7px 9px;font-size:10px;cursor:pointer}
+  .mdss-chat-form{display:flex;gap:8px;padding:11px;border-top:1px solid #e1ebf3;background:#fff}.mdss-chat-form input{min-width:0;flex:1;border:1px solid #d5e3ed;border-radius:10px;padding:11px;font:inherit;font-size:12px;outline:none}.mdss-chat-form input:focus{border-color:#087cc1}.mdss-chat-form button{border:0;border-radius:10px;background:#087cc1;color:#fff;font-size:12px;font-weight:700;padding:0 14px;cursor:pointer}.mdss-chat-note{padding:0 12px 10px;background:#fff;color:#7a8da0;font-size:9px;line-height:1.45}
+  @media(max-width:520px){.mdss-chat-launcher{right:16px;bottom:16px;width:54px;height:54px}.mdss-chat-panel{right:12px;bottom:80px;width:calc(100vw - 24px);height:min(560px,calc(100vh - 100px))}}
+  @media(prefers-reduced-motion:reduce){.mdss-chat-launcher,.mdss-chat-panel{transition:none!important}}
+</style>
+
+
+    <style>
+    /* MDSS refreshed index page — visual layer only; original form/JS hooks preserved */
+    :root {
+      --mdss-navy:#082F5B; --mdss-blue:#087CC1; --mdss-teal:#16A3B5;
+      --mdss-pale:#EAF5FC; --mdss-ink:#18324B; --mdss-muted:#64788B;
+      --mdss-border:#DCE8F1; --mdss-white:#fff;
+    }
+    html { scroll-behavior:smooth; }
+    body.index-page { margin:0; background:#F4F8FC; color:var(--mdss-ink); font-family:Inter,Arial,sans-serif; }
+    .index-page * { box-sizing:border-box; }
+    .index-page .navbar { position:sticky; top:0; z-index:1000; display:flex; justify-content:space-between; align-items:center; gap:22px; padding:14px clamp(18px,4vw,64px); background:rgba(255,255,255,.97); border-bottom:1px solid var(--mdss-border); box-shadow:0 5px 22px rgba(8,47,91,.06); }
+    .index-page .nav-logo { display:flex; align-items:center; gap:12px; }
+    .index-page .logo-icon { width:48px; height:48px; border-radius:13px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#fff; border:1px solid #e6edf3; box-shadow:0 3px 10px rgba(8,47,91,.08); flex-shrink:0; }
+    .index-page .logo-icon img { display:block; width:100%; height:100%; padding:3px; object-fit:contain; }
+    .index-page .logo-title { display:block; color:var(--mdss-navy); font-weight:800; font-size:20px; letter-spacing:.04em; }
+    .index-page .logo-sub { display:block; color:var(--mdss-muted); font-size:11px; margin-top:3px; }
+    .index-page .nav-right { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+    .index-page .nav-link { color:var(--mdss-navy); text-decoration:none; font-weight:650; padding:10px 13px; border-radius:10px; }
+    .index-page .nav-link:hover { background:var(--mdss-pale); }
+    .index-page .nav-badge { background:#EEF5FA; border:1px solid #DCEAF4; color:var(--mdss-navy); border-radius:999px; padding:8px 12px; font-size:12px; font-weight:650; }
+    .index-page .nav-logout { display:inline-flex; align-items:center; justify-content:center; padding:10px 15px; border-radius:10px; background:var(--mdss-navy); color:#fff; text-decoration:none; font-size:13px; font-weight:700; }
+    .index-page .nav-logout:hover { background:var(--mdss-blue); }
+    .index-page .hero { position:relative; overflow:hidden; padding:72px 24px 68px; background:linear-gradient(120deg,#06264B 0%,#084D83 56%,#087CC1 100%); color:white; }
+    .index-page .hero:before,.index-page .hero:after { content:""; position:absolute; border:1px solid rgba(255,255,255,.12); border-radius:50%; pointer-events:none; }
+    .index-page .hero:before { width:440px;height:440px;right:-90px;top:-190px; }
+    .index-page .hero:after { width:300px;height:300px;right:70px;bottom:-210px; }
+    .index-page .hero-content { position:relative; z-index:1; width:min(1120px,100%); margin:0 auto; }
+    .index-page .hero-tag { display:inline-flex; align-items:center; gap:8px; padding:9px 13px; border:1px solid rgba(255,255,255,.23); border-radius:999px; background:rgba(255,255,255,.09); color:#D9F6FF; font-size:11px; font-weight:750; letter-spacing:.1em; text-transform:uppercase; }
+    .index-page .hero-title { margin:24px 0 16px; max-width:800px; color:#fff; font-size:clamp(36px,5.2vw,64px); line-height:1.08; letter-spacing:-.04em; font-weight:800; }
+    .index-page .hero-accent { color:#7BE3E8; }
+    .index-page .hero-desc { max-width:720px; margin:0; color:#E0EEF8; font-size:16px; line-height:1.85; }
+    .index-page .hero-stats { display:flex; align-items:stretch; flex-wrap:wrap; gap:0; margin-top:34px; max-width:750px; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.07); border-radius:16px; overflow:hidden; }
+    .index-page .stat { min-width:150px; flex:1; padding:17px 22px; }
+    .index-page .stat-num { display:block; color:#fff; font-size:22px; font-weight:800; }
+    .index-page .stat-label { display:block; margin-top:5px; color:#D4E8F6; font-size:11px; line-height:1.5; }
+    .index-page .stat-divider { width:1px; background:rgba(255,255,255,.15); }
+    .index-page .form-section { padding:54px 22px 66px; }
+    .index-page .container { width:min(1180px,100%); margin:0 auto; }
+    .index-page .section-header { max-width:760px; margin:0 auto 30px; text-align:center; }
+    .index-page .section-header h2,.index-page .section-title { color:var(--mdss-navy); font-size:clamp(26px,3vw,36px); letter-spacing:-.03em; margin:0 0 10px; }
+    .index-page .section-header p { color:var(--mdss-muted); line-height:1.75; margin:0; }
+    .index-page .form-grid { display:grid; grid-template-columns:minmax(280px,.85fr) minmax(0,1.45fr); align-items:start; gap:22px; }
+    .index-page .form-card { min-width:0; padding:clamp(20px,2.6vw,30px); background:#fff; border:1px solid var(--mdss-border); border-radius:20px; box-shadow:0 12px 35px rgba(8,47,91,.055); }
+    .index-page .card-header { display:flex; align-items:center; gap:13px; margin-bottom:24px; padding-bottom:19px; border-bottom:1px solid #EAF0F5; }
+    .index-page .card-icon { width:46px;height:46px;display:grid;place-items:center;flex-shrink:0;border-radius:13px;background:var(--mdss-pale);font-size:23px; }
+    .index-page .card-header h3 { color:var(--mdss-navy); margin:0 0 5px; font-size:17px; }
+    .index-page .card-header p { color:var(--mdss-muted); margin:0; font-size:12px; line-height:1.5; }
+    .index-page .upload-area { min-height:300px; border:1.5px dashed #9FC6DF; border-radius:16px; background:linear-gradient(180deg,#F7FBFE,#F0F8FD); padding:22px; transition:.2s ease; }
+    .index-page .upload-area:hover,.index-page .upload-area.dragover { border-color:var(--mdss-blue); background:#EAF6FF; }
+    .index-page .upload-placeholder { min-height:250px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; }
+    .index-page .upload-icon { width:64px;height:64px;display:grid;place-items:center;border-radius:18px;background:#fff;box-shadow:0 5px 20px rgba(8,47,91,.08);font-size:30px;margin-bottom:15px; }
+    .index-page .upload-title { color:var(--mdss-navy); font-size:16px; font-weight:750; margin:0 0 9px; }
+    .index-page .upload-sub { max-width:300px; color:var(--mdss-muted); font-size:12px; line-height:1.7; margin:0 0 19px; }
+    .index-page .btn-upload,.index-page .btn-change { border:0; border-radius:10px; padding:11px 17px; color:#fff; background:var(--mdss-blue); font:inherit; font-size:13px; font-weight:700; cursor:pointer; }
+    .index-page .btn-upload:hover,.index-page .btn-change:hover { background:var(--mdss-navy); }
+    .index-page .preview-info { display:flex; justify-content:space-between; align-items:center; gap:12px; color:var(--mdss-muted); font-size:12px; }
+    .index-page .fields { display:flex; flex-direction:column; gap:18px; }
+    .index-page .field-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .index-page .field { min-width:0; }
+    .index-page .field label { display:block; color:#304B63; font-size:12px; font-weight:750; margin-bottom:8px; }
+    .index-page .required { color:#D9485F; }
+    .index-page input:not([type="file"]),.index-page select,.index-page textarea { width:100%; min-height:44px; border:1px solid #D6E2EC; border-radius:10px; background:#fff; padding:11px 12px; color:var(--mdss-ink); font:inherit; font-size:13px; outline:none; transition:border-color .2s,box-shadow .2s; }
+    .index-page textarea { resize:vertical; min-height:95px; }
+    .index-page input:focus,.index-page select:focus,.index-page textarea:focus { border-color:var(--mdss-blue); box-shadow:0 0 0 3px rgba(8,124,193,.11); }
+    .index-page .field-label-row { gap:8px; margin-bottom:8px; }
+    .index-page .field-label-row label { margin:0; }
+    .index-page .tooltip-icon { width:17px;height:17px;background:var(--mdss-teal);font-size:10px; }
+    .index-page .tooltip-icon:hover { background:var(--mdss-navy); }
+    .index-page .tooltip-box { left:25px; width:min(250px,70vw); font-weight:400; }
+    .index-page .live-risk-panel { margin-top:24px; padding:22px 24px; border:1px solid #BFE5E9; border-radius:18px; background:linear-gradient(115deg,#F0FBFC,#F3F9FF); }
+    .index-page .live-risk-header { display:flex; align-items:center; justify-content:space-between; gap:12px; color:var(--mdss-navy); font-weight:800; }
+    .index-page .live-risk-badge { color:#087B85; background:#DDF7F4; border:1px solid #B7EAE4; border-radius:999px; padding:6px 10px; font-size:10px; text-transform:uppercase; letter-spacing:.06em; }
+    .index-page .live-risk-score { color:var(--mdss-navy); font-size:36px; font-weight:800; margin:16px 0 4px; }
+    .index-page .live-risk-label { color:var(--mdss-muted); font-size:12px; line-height:1.6; }
+    .index-page .live-risk-bar { height:9px; overflow:hidden; border-radius:999px; background:#DCEAF2; margin:15px 0 10px; }
+    .index-page .live-risk-fill { height:100%; border-radius:inherit; background:linear-gradient(90deg,#16A3B5,#087CC1); transition:width .25s ease; }
+    .index-page .live-risk-factors { color:#496276; font-size:12px; line-height:1.7; }
+    .index-page .submit-area { text-align:center; padding-top:24px; }
+    .index-page .btn-analyse { display:inline-flex; align-items:center; justify-content:center; gap:10px; min-width:min(320px,100%); padding:16px 24px; border:0; border-radius:12px; background:linear-gradient(100deg,var(--mdss-navy),var(--mdss-blue)); color:#fff; font:inherit; font-size:15px; font-weight:800; box-shadow:0 9px 22px rgba(8,83,143,.2); cursor:pointer; transition:transform .2s,box-shadow .2s; }
+    .index-page .btn-analyse:hover { transform:translateY(-2px); box-shadow:0 13px 27px rgba(8,83,143,.27); }
+    .index-page .btn-analyse:disabled { opacity:.65; cursor:wait; transform:none; }
+    .index-page .submit-note { max-width:600px; margin:13px auto 0; color:var(--mdss-muted); font-size:11px; line-height:1.7; }
+    .index-page .how-section { padding:62px 22px; background:#fff; border-top:1px solid var(--mdss-border); }
+    .index-page .section-title { text-align:center; margin-bottom:32px; }
+    .index-page .steps-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; }
+    .index-page .step { position:relative; padding:25px 21px; border:1px solid var(--mdss-border); border-radius:16px; background:#fff; box-shadow:0 8px 24px rgba(8,47,91,.04); }
+    .index-page .step-num { color:#9BCBE8; font-size:12px; font-weight:850; letter-spacing:.1em; }
+    .index-page .step-icon { width:46px;height:46px;display:grid;place-items:center;margin:15px 0;border-radius:13px;background:var(--mdss-pale);font-size:22px; }
+    .index-page .step h4 { color:var(--mdss-navy); font-size:15px; margin:0 0 9px; }
+    .index-page .step p { color:var(--mdss-muted); font-size:12px; line-height:1.75; margin:0; }
+    .index-page .step-arrow { display:none; }
+    .index-page .footer { padding:28px 20px; background:#061F3D; color:#D4E3F0; text-align:center; }
+    .index-page .footer p { margin:5px 0; font-size:11px; line-height:1.7; }
+    .index-page .footer p:first-child { color:#fff; font-weight:750; font-size:13px; }
+    @media(max-width:900px) {
+      .index-page .form-grid { grid-template-columns:1fr; }
+      .index-page .steps-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .index-page .hero { padding:58px 24px; }
+    }
+    @media(max-width:620px) {
+      .index-page .navbar { align-items:flex-start; padding:12px 15px; }
+      .index-page .logo-icon { width:40px;height:40px; }
+      .index-page .logo-title { font-size:17px; }
+      .index-page .logo-sub { max-width:155px; font-size:9px; }
+      .index-page .nav-right { gap:6px; }
+      .index-page .nav-link { padding:7px 8px; font-size:11px; }
+      .index-page .nav-badge { display:none; }
+      .index-page .nav-logout { padding:8px 10px; font-size:11px; }
+      .index-page .hero { padding:48px 19px; }
+      .index-page .hero-title { font-size:39px; }
+      .index-page .hero-desc { font-size:14px; }
+      .index-page .stat { min-width:33%; padding:13px 11px; }
+      .index-page .stat-num { font-size:17px; }
+      .index-page .stat-label { font-size:10px; }
+      .index-page .stat-divider { display:none; }
+      .index-page .form-section { padding:38px 14px 45px; }
+      .index-page .form-card { padding:19px 16px; border-radius:16px; }
+      .index-page .field-row { grid-template-columns:1fr; gap:16px; }
+      .index-page .upload-area { padding:13px; }
+      .index-page .live-risk-panel { padding:18px; }
+      .index-page .steps-grid { grid-template-columns:1fr; }
+      .index-page .how-section { padding:44px 16px; }
+    }
+    @media(prefers-reduced-motion:reduce) {
+      .index-page *, .index-page *:before, .index-page *:after { scroll-behavior:auto!important; transition:none!important; }
+    }
+    
+    /* Final mockup implementation: workspace header, workflow and guidance rail */
+    .workspace-topbar{height:70px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 clamp(20px,3vw,42px);background:rgba(255,255,255,.94);border-bottom:1px solid #dce8f1;box-shadow:0 4px 20px rgba(8,47,91,.035)}
+    .topbar-search{display:flex;align-items:center;gap:12px;min-width:250px;width:min(440px,55%);padding:12px 16px;border:1px solid #d8e4ee;border-radius:14px;background:#fbfdff;color:#6b8094;font-size:13px}.topbar-search span:first-child{font-size:22px;color:#082f5b;line-height:1}
+    .topbar-user{display:flex;align-items:center;gap:11px;color:#082f5b}.topbar-user strong,.topbar-user small{display:block}.topbar-user strong{font-size:13px}.topbar-user small{margin-top:3px;color:#71859a;font-size:11px}.status-dot{width:9px;height:9px;border-radius:50%;background:#16b89a;box-shadow:0 0 0 4px #e2f8f1}
+    .index-page .form-section{padding:28px clamp(16px,2vw,28px) 48px}.index-page .container{width:100%;max-width:1600px}
+    .analysis-heading{display:flex;align-items:center;gap:17px;margin:4px 8px 25px}.heading-icon{display:grid;place-items:center;width:60px;height:60px;flex:0 0 60px;border-radius:17px;background:linear-gradient(145deg,#e0f2ff,#c9e9ff);color:#087cc1;font-size:29px;font-weight:800}.heading-copy{min-width:0}.breadcrumbs{display:flex;align-items:center;gap:10px;margin-bottom:6px;color:#7b8fa3;font-size:11px}.breadcrumbs strong{color:#087cc1}.analysis-heading h2{margin:0 0 5px;color:#082f5b;font-size:clamp(25px,2.3vw,34px);letter-spacing:-.035em;line-height:1.2}.analysis-heading p{margin:0;color:#637a90;font-size:13px;line-height:1.65}
+    .workflow-steps{display:flex;align-items:center;gap:10px;margin:0 8px 27px;padding:0 8px}.workflow-steps>i{height:2px;flex:1;min-width:12px;background:#d4e0ea}.workflow-step{display:flex;align-items:center;gap:10px;min-width:0}.workflow-step>span{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:50%;background:#e2eaf1;color:#38546e;font-size:13px;font-weight:800}.workflow-step.active>span{background:linear-gradient(135deg,#087cc1,#0757b7);color:#fff;box-shadow:0 5px 13px #087cc12a}.workflow-step strong,.workflow-step small{display:block;white-space:nowrap}.workflow-step strong{font-size:11px;color:#082f5b}.workflow-step small{margin-top:3px;color:#72869a;font-size:10px}
+    .index-page .form-grid{grid-template-columns:minmax(250px,.92fr) minmax(380px,1.05fr) minmax(220px,.66fr);gap:14px;align-items:start}.index-page .form-card{padding:21px;border-radius:17px;box-shadow:0 8px 26px rgba(8,47,91,.045)}.index-page .card-header{margin-bottom:19px;padding-bottom:15px}.index-page .card-header h3{font-size:16px}.index-page .upload-area{min-height:260px;padding:15px}.index-page .upload-placeholder{min-height:225px}.index-page .fields{gap:15px}.index-page .field-row{gap:12px}.index-page .field label{font-size:11px}.index-page input:not([type=file]),.index-page select,.index-page textarea{font-size:12px;min-height:42px}.index-page .live-risk-panel,.index-page .submit-area{grid-column:1/-1}
+    .analysis-rail{display:grid;gap:14px;min-width:0}.rail-card{padding:19px 17px;background:#fff;border:1px solid #dce8f1;border-radius:17px;box-shadow:0 8px 25px rgba(8,47,91,.045)}.rail-title{display:flex;align-items:center;gap:10px;margin-bottom:13px}.rail-title h3{margin:0;color:#082f5b;font-size:13px;line-height:1.4}.rail-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#e4f3ff;color:#087cc1;font-size:20px;font-weight:800;flex-shrink:0}.rail-card>p{margin:0;color:#526b82;font-size:11px;line-height:1.75}.model-list{display:grid;gap:11px;margin:17px 0 0;padding:0;list-style:none}.model-list li{display:flex;align-items:flex-start;gap:9px;color:#3e5870;font-size:11px;line-height:1.5}.model-list li span{display:grid;place-items:center;flex:0 0 17px;width:17px;height:17px;border-radius:50%;background:#d8f7f0;color:#079c89;font-size:11px;font-weight:900}.image-type-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:13px 0}.image-type-grid>div{text-align:center;min-width:0}.mini-image{display:grid;place-items:center;min-height:53px;border-radius:9px;background:linear-gradient(145deg,#243344,#101820);color:#d9e7ef;font-size:12px;font-weight:800;letter-spacing:.05em}.image-type-grid small{display:block;margin-top:6px;color:#60778e;font-size:9px}.rail-card .rail-muted{font-size:10px;color:#74879a}.safety-card{background:linear-gradient(145deg,#f0fcf8,#e3f8f2);border-color:#c8eee2}.safety-card .rail-title h3{color:#087b62}.safety-shield{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#c9f3e4;color:#079875;font-size:19px;font-weight:900;flex-shrink:0}.safety-card>p{color:#286a5b}
+    @media(max-width:1250px){.index-page .form-grid{grid-template-columns:minmax(250px,.9fr) minmax(360px,1.1fr)}.analysis-rail{grid-column:1/-1;grid-template-columns:repeat(3,minmax(0,1fr))}.rail-card{padding:16px}}
+    @media(max-width:900px){.workspace-topbar{height:60px}.index-page .form-grid{grid-template-columns:1fr}.analysis-rail{grid-column:auto;grid-template-columns:repeat(2,minmax(0,1fr))}.workflow-steps{gap:7px}.workflow-step{gap:6px}.workflow-step small{display:none}.workflow-step strong{white-space:normal}.workflow-steps>i{flex:1}}
+    @media(max-width:620px){.workspace-topbar{padding:0 14px}.topbar-search{min-width:0;width:auto;flex:1;padding:10px 11px;font-size:11px}.topbar-user{gap:7px}.topbar-user strong{font-size:11px}.topbar-user small{font-size:9px}.analysis-heading{align-items:flex-start;margin:0 0 20px;gap:12px}.heading-icon{width:47px;height:47px;flex-basis:47px;border-radius:13px;font-size:23px}.analysis-heading h2{font-size:25px}.analysis-heading p{font-size:12px}.breadcrumbs{font-size:10px}.workflow-steps{margin:0 0 20px;padding:0;gap:4px}.workflow-step{display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;flex:1}.workflow-step>span{width:28px;height:28px;flex-basis:28px;font-size:11px}.workflow-step strong{font-size:9px}.workflow-steps>i{min-width:5px}.analysis-rail{grid-template-columns:1fr}.index-page .form-card{padding:17px 14px}.topbar-search span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+
+</style>
+
 </head>
 
-<body>
 
-    <!-- NAVIGATION BAR -->
-    <nav class="navbar">
-        <div class="nav-left">
-            <div class="nav-logo">
-                <div class="logo-icon">+</div>
 
-                <div>
-                    <span class="logo-title">MDSS</span>
-                    <span class="logo-sub">Medical Decision Support System</span>
-                </div>
-            </div>
-        </div>
+<body class="index-page">
 
-        <div class="nav-right">
-            <a href="/dashboard" class="nav-link">📊 Dashboard</a>
-            <span class="nav-badge">{{ current_user.name }}</span>
-            <span class="nav-badge">{{ current_user.role | title }}</span>
-            <a href="/logout" class="nav-logout">Sign Out</a>
-        </div>
+<div class="app-shell">
+  <aside class="sidebar" aria-label="Professional navigation">
+    <div class="brand">
+      <div class="brand-logo"><img src="{{ url_for('static', filename='images/aaua-logo.png') }}" alt="AAUA logo"></div>
+      <div><span class="brand-name">MDSS</span><span class="brand-sub">Medical Decision Support System<br>Breast Cancer Detection</span></div>
+    </div>
+    <div class="nav-label">Workspace</div>
+    <nav class="side-nav">
+      <a href="{{ url_for('dashboard') }}"><span class="nav-icon">⌂</span>Dashboard</a>
+      <a class="active" href="{{ url_for('index') }}" aria-current="page"><span class="nav-icon">▤</span>New Analysis</a>
+      <a href="{{ url_for('patients_page') }}"><span class="nav-icon">♙</span>Patients &amp; Cases</a>
+      <a href="{{ url_for('reports_page') }}"><span class="nav-icon">▥</span>Reports</a>
     </nav>
+    <div class="nav-label">Account</div>
+    <nav class="side-nav">
+      <a href="{{ url_for('settings_page') }}"><span class="nav-icon">⚙</span>Settings</a>
+      <a href="{{ url_for('logout') }}"><span class="nav-icon">⇥</span>Sign Out</a>
+    </nav>
+    <div class="sidebar-note"><strong>AI-assisted breast screening</strong><p>Review predictions alongside clinical information. MDSS outputs support assessment and do not replace professional judgement.</p></div>
+  </aside>
+  <main class="main">
+    <header class="workspace-topbar">
+      <div class="topbar-search" role="search"><span aria-hidden="true">⌕</span><span>Medical Decision Support System</span></div>
+      <div class="topbar-user"><span class="status-dot"></span><div><strong>{{ current_user.name if current_user.is_authenticated and current_user.name else 'Professional Workspace' }}</strong><small>{{ current_user.role|capitalize if current_user.is_authenticated and current_user.role else 'Healthcare Professional' }}</small></div></div>
+    </header>
 
 
-    <!-- HERO SECTION -->
-    <section class="hero">
-        <div class="hero-content">
-
-            <div class="hero-tag">
-                AI-Powered · Explainable · Clinically Deployable
-            </div>
-
-            <h1 class="hero-title">
-                Breast Cancer<br>
-                <span class="hero-accent">Detection System</span>
-            </h1>
-
-            <p class="hero-desc">
-                A hybrid CNN-SVM model integrated within a Medical Decision Support System
-                for enhanced, explainable breast cancer detection — designed for Nigerian
-                healthcare settings.
-            </p>
-
-            <div class="hero-stats">
-
-                <div class="stat">
-                    <span class="stat-num">2.35M</span>
-                    <span class="stat-label">New cases annually</span>
-                </div>
-
-                <div class="stat-divider"></div>
-
-                <div class="stat">
-                    <span class="stat-num">CNN + SVM</span>
-                    <span class="stat-label">Hybrid AI Model</span>
-                </div>
-
-                <div class="stat-divider"></div>
-
-                <div class="stat">
-                    <span class="stat-num">Grad-CAM</span>
-                    <span class="stat-label">Visual Explanation</span>
-                </div>
-
-            </div>
-        </div>
-    </section>
 
 
     <!-- MAIN FORM SECTION -->
+
     <section class="form-section">
+
+
 
         <div class="container">
 
-            <div class="section-header">
+
+
+            <div class="analysis-heading">
+              <div class="heading-icon" aria-hidden="true">✚</div>
+              <div class="heading-copy">
+                <div class="breadcrumbs"><span>Workspace</span><span>›</span><strong>New Analysis</strong></div>
                 <h2>New Patient Analysis</h2>
-                <p>
-                    Upload a mammogram image and enter the patient clinical data
-                    to run the AI analysis.
-                </p>
+                <p>Upload a mammogram and enter the patient's clinical information to run the AI analysis.</p>
+              </div>
+            </div>
+            <div class="workflow-steps" aria-label="Analysis workflow">
+              <div class="workflow-step active"><span>1</span><div><strong>Upload Image</strong><small>Mammogram scan</small></div></div>
+              <i></i><div class="workflow-step"><span>2</span><div><strong>Patient Information</strong><small>Select or register patient</small></div></div>
+              <i></i><div class="workflow-step"><span>3</span><div><strong>Clinical Data</strong><small>Enter patient details</small></div></div>
+              <i></i><div class="workflow-step"><span>4</span><div><strong>Run Analysis</strong><small>Review AI output</small></div></div>
             </div>
 
 
+
+
+
             <form action="/predict"
+
                   method="POST"
+
                   enctype="multipart/form-data"
+
                   id="analysisForm">
+
+
 
                 <div class="form-grid">
 
 
+
+
+
                     <!-- LEFT: IMAGE UPLOAD -->
+
                     <div class="form-card">
+
+
 
                         <div class="card-header">
 
+
+
                             <div class="card-icon">🩻</div>
 
+
+
                             <div>
+
                                 <h3>Mammogram Image</h3>
+
                                 <p>Upload the patient's mammogram scan</p>
+
                             </div>
 
+
+
                         </div>
+
+
+
 
 
                         <div class="upload-area" id="uploadArea">
 
+
+
                             <input
+
                                 type="file"
+
                                 name="images"
+
                                 id="imageInput"
+
                                 accept="image/*"
+
                                 multiple
+
                                 required
+
                                 hidden
+
                             >
+
+
 
                             <div class="upload-placeholder" id="uploadPlaceholder">
 
+
+
                                 <div class="upload-icon">📂</div>
 
+
+
                                 <p class="upload-title">
+
                                     Click to upload mammogram(s)
+
                                 </p>
+
+
 
                                 <p class="upload-sub">
+
                                     Upload up to 4 images — left breast, right breast,
+
                                     or comparison scans
+
                                 </p>
 
+
+
                                 <button
+
                                     type="button"
+
                                     class="btn-upload"
+
                                     onclick="document.getElementById('imageInput').click()"
+
                                 >
+
                                     Choose Files
+
                                 </button>
 
+
+
                             </div>
+
+
+
 
 
                             <div
+
                                 class="upload-preview"
+
                                 id="uploadPreview"
+
                                 style="display:none;"
+
                             >
 
+
+
                                 <div
+
                                     id="previewGrid"
+
                                     style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;"
+
                                 ></div>
 
+
+
                                 <div
+
                                     class="preview-info"
+
                                     style="margin-top:10px;"
+
                                 >
 
+
+
                                     <span id="fileName">
+
                                         No files selected
+
                                     </span>
 
+
+
                                     <button
+
                                         type="button"
+
                                         class="btn-change"
+
                                         onclick="document.getElementById('imageInput').click()"
+
                                     >
+
                                         Change
+
                                     </button>
+
+
 
                                 </div>
 
+
+
                             </div>
+
+
 
                         </div>
 
+
+
                     </div>
+
                     <!-- END LEFT IMAGE CARD -->
 
 
+
+
+
                     <!-- RIGHT: CLINICAL DATA -->
+
                     <div class="form-card">
+
+
 
                         <div class="card-header">
 
+
+
                             <div class="card-icon">📋</div>
 
+
+
                             <div>
+
                                 <h3>Patient Clinical Data</h3>
+
                                 <p>Enter the patient's clinical information</p>
+
                             </div>
+
+
 
                         </div>
 
 
+
+
+
                         <!-- PATIENT SELECTOR -->
+
                         <div
+
                             class="field"
+
                             style="margin-bottom:20px;padding-bottom:20px;border-bottom:2px solid #f0f4f8;"
+
                         >
+
+
 
                             <div class="field-label-row">
 
+
+
                                 <label>
+
                                     Select Patient
+
                                     <span class="required">*</span>
+
                                 </label>
+
+
 
                                 <div class="tooltip-wrap">
 
+
+
                                     <div class="tooltip-icon">
+
                                         i
+
                                     </div>
+
+
 
                                     <div class="tooltip-box">
+
                                         Select the patient this analysis is for.
+
                                         The result will be linked to their account
+
                                         and they can view it when they log in.
+
                                         If the patient does not have an account yet,
+
                                         ask them to register first.
+
                                     </div>
 
+
+
                                 </div>
+
+
 
                             </div>
 
 
+
+
+
                             <select
+
                                 name="patient_id"
+
                                 id="patientSelect"
+
                                 required
+
                             >
 
+
+
                                 <option
+
                                     value=""
+
                                     disabled
+
                                     selected
+
                                 >
+
                                     Search and select a patient...
+
                                 </option>
+
+
 
                             </select>
 
 
+
+
+
                             <div
+
                                 style="font-size:12px;color:#94a3b8;margin-top:6px;"
+
                             >
+
                                 Patient must have a registered account.
 
+
+
                                 <a
+
                                     href="/register"
+
                                     target="_blank"
+
                                     style="color:#028090;"
+
                                 >
+
                                     Register new patient →
+
                                 </a>
 
+
+
                             </div>
+
+
 
                         </div>
 
 
+
+
+
                         <!-- CLINICAL FIELDS -->
+
                         <div class="fields">
 
 
+
+
+
                             <!-- AGE + BI-RADS -->
+
                             <div class="field-row">
 
 
+
+
+
                                 <!-- AGE -->
+
                                 <div class="field">
+
+
 
                                     <div class="field-label-row">
 
+
+
                                         <label>
+
                                             Patient Age
+
                                             <span class="required">*</span>
+
                                         </label>
+
+
 
                                         <div class="tooltip-wrap">
 
+
+
                                             <div class="tooltip-icon">
+
                                                 i
+
                                             </div>
+
+
 
                                             <div class="tooltip-box">
+
                                                 Age is a major risk factor.
+
                                                 Women above 40 years have a
+
                                                 significantly higher risk of
+
                                                 breast cancer. The older the
+
                                                 patient, the higher the baseline risk.
+
                                             </div>
 
+
+
                                         </div>
+
+
 
                                     </div>
 
 
+
+
+
                                     <input
+
                                         type="number"
+
                                         name="age"
+
                                         placeholder="e.g. 45"
+
                                         min="18"
+
                                         max="100"
+
                                         required
+
                                     >
+
+
 
                                 </div>
 
 
+
+
+
                                 <!-- BI-RADS -->
+
                                 <div class="field">
+
+
 
                                     <div class="field-label-row">
 
+
+
                                         <label>
+
                                             BI-RADS Category
+
                                             <span class="required">*</span>
+
                                         </label>
+
+
 
                                         <div class="tooltip-wrap">
 
+
+
                                             <div class="tooltip-icon">
+
                                                 i
+
                                             </div>
 
+
+
                                             <div class="tooltip-box">
+
                                                 BI-RADS is a scoring system used
+
                                                 by radiologists to classify what
+
                                                 they see in a breast scan.
+
                                                 Category 1 = Nothing found.
+
                                                 Category 3 = Probably fine.
+
                                                 Category 4 = Suspicious.
+
                                                 Category 5 = Highly suspicious
+
                                                 of cancer.
+
                                             </div>
+
+
 
                                         </div>
 
+
+
                                     </div>
+
+
+
 
 
                                     <select name="birads" required>
 
+
+
                                         <option
+
                                             value=""
+
                                             disabled
+
                                             selected
+
                                         >
+
                                             Select category
+
                                         </option>
+
+
 
                                         <option value="1">
+
                                             Category 1 - Negative
+
                                         </option>
+
+
 
                                         <option value="2">
+
                                             Category 2 - Benign
+
                                         </option>
+
+
 
                                         <option value="3">
+
                                             Category 3 - Probably Benign
+
                                         </option>
+
+
 
                                         <option value="4">
+
                                             Category 4 - Suspicious
+
                                         </option>
+
+
 
                                         <option value="5">
+
                                             Category 5 - Highly Suspicious
+
                                         </option>
 
+
+
                                         <option value="6">
+
                                             Category 6 - Known Malignancy
+
                                         </option>
+
+
 
                                     </select>
 
+
+
                                 </div>
+
+
 
                             </div>
 
 
+
+
+
                             <!-- FAMILY HISTORY + BREAST DENSITY -->
+
                             <div class="field-row">
 
 
+
+
+
                                 <!-- FAMILY HISTORY -->
+
                                 <div class="field">
+
+
 
                                     <div class="field-label-row">
 
+
+
                                         <label>
+
                                             Family History
+
                                         </label>
+
+
 
                                         <div class="tooltip-wrap">
 
+
+
                                             <div class="tooltip-icon">
+
                                                 i
+
                                             </div>
 
+
+
                                             <div class="tooltip-box">
+
                                                 If the patient has a close relative
+
                                                 such as a mother, sister, or daughter
+
                                                 who has had breast cancer, their own
+
                                                 risk is significantly higher.
+
                                                 This is one of the strongest risk factors.
+
                                             </div>
+
+
 
                                         </div>
 
+
+
                                     </div>
+
+
+
 
 
                                     <select name="family_history">
 
+
+
                                         <option value="0">
+
                                             No
+
                                         </option>
+
+
 
                                         <option value="1">
+
                                             Yes
+
                                         </option>
 
+
+
                                     </select>
+
+
 
                                 </div>
 
 
+
+
+
                                 <!-- BREAST DENSITY -->
+
                                 <div class="field">
+
+
 
                                     <div class="field-label-row">
 
+
+
                                         <label>
+
                                             Breast Density
+
                                         </label>
+
+
 
                                         <div class="tooltip-wrap">
 
+
+
                                             <div class="tooltip-icon">
+
                                                 i
+
                                             </div>
 
+
+
                                             <div class="tooltip-box">
+
                                                 Breast density describes how much
+
                                                 fibrous tissue is in the breast.
+
                                                 Type A is mostly fat and easiest
+
                                                 to read. Type D is very dense,
+
                                                 hardest to read, and carries higher
+
                                                 cancer risk. Dense breasts can
+
                                                 hide tumours on a mammogram.
+
                                             </div>
+
+
 
                                         </div>
 
+
+
                                     </div>
+
+
+
 
 
                                     <select name="density">
 
+
+
                                         <option value="1">
+
                                             Type A - Almost entirely fatty
+
                                         </option>
+
+
 
                                         <option value="2">
+
                                             Type B - Scattered density
+
                                         </option>
+
+
 
                                         <option value="3">
+
                                             Type C - Heterogeneously dense
+
                                         </option>
 
+
+
                                         <option value="4">
+
                                             Type D - Extremely dense
+
                                         </option>
+
+
 
                                     </select>
 
+
+
                                 </div>
+
+
 
                             </div>
 
 
-                            <!-- MENOPAUSAL STATUS + PRIOR BIOPSY -->
+
+
+
+                            <!-- AI MODEL FEATURES: SUBTLETY + ABNORMALITY TYPE -->
+
                             <div class="field-row">
 
 
-                                <!-- MENOPAUSAL STATUS -->
+
+                                <!-- SUBTLETY -->
+
                                 <div class="field">
+
+
 
                                     <div class="field-label-row">
 
+
+
                                         <label>
-                                            Menopausal Status
+
+                                            Subtlety
+
+                                            <span class="required">*</span>
+
                                         </label>
+
+
 
                                         <div class="tooltip-wrap">
 
+
+
                                             <div class="tooltip-icon">
+
                                                 i
+
                                             </div>
 
+
+
                                             <div class="tooltip-box">
-                                                Menopause is when a woman's
-                                                monthly periods stop permanently,
-                                                usually around age 50. Women who
-                                                have gone through menopause have
-                                                a higher risk of breast cancer
-                                                than those who have not.
+
+                                                Subtlety describes how difficult the mammographic
+
+                                                abnormality is to detect. Use the value recorded
+
+                                                for the mammogram, typically from 1 (least subtle)
+
+                                                to 5 (most subtle).
+
                                             </div>
+
+
 
                                         </div>
 
+
+
                                     </div>
+
+
+
+                                    <input
+
+                                        type="number"
+
+                                        name="subtlety"
+
+                                        placeholder="e.g. 3"
+
+                                        min="1"
+
+                                        max="5"
+
+                                        step="1"
+
+                                        required
+
+                                    >
+
+
+
+                                </div>
+
+
+
+
+
+                                <!-- ABNORMALITY TYPE -->
+
+                                <div class="field">
+
+
+
+                                    <div class="field-label-row">
+
+
+
+                                        <label>
+
+                                            Abnormality Type
+
+                                            <span class="required">*</span>
+
+                                        </label>
+
+
+
+                                        <div class="tooltip-wrap">
+
+
+
+                                            <div class="tooltip-icon">
+
+                                                i
+
+                                            </div>
+
+
+
+                                            <div class="tooltip-box">
+
+                                                Select the type of abnormality identified
+
+                                                in the mammogram.
+
+                                            </div>
+
+
+
+                                        </div>
+
+
+
+                                    </div>
+
+
+
+                                    <select name="abnormality_type" required>
+
+
+
+                                        <option
+
+                                            value=""
+
+                                            disabled
+
+                                            selected
+
+                                        >
+
+                                            Select type
+
+                                        </option>
+
+
+
+                                        <option value="mass">
+
+                                            Mass
+
+                                        </option>
+
+
+
+                                        <option value="calcification">
+
+                                            Calcification
+
+                                        </option>
+
+
+
+                                    </select>
+
+
+
+                                </div>
+
+
+
+                            </div>
+
+
+
+
+
+                            <!-- AI MODEL FEATURES: IMAGE VIEW + BREAST SIDE -->
+
+                            <div class="field-row">
+
+
+
+                                <!-- IMAGE VIEW -->
+
+                                <div class="field">
+
+
+
+                                    <div class="field-label-row">
+
+
+
+                                        <label>
+
+                                            Image View
+
+                                            <span class="required">*</span>
+
+                                        </label>
+
+
+
+                                        <div class="tooltip-wrap">
+
+
+
+                                            <div class="tooltip-icon">
+
+                                                i
+
+                                            </div>
+
+
+
+                                            <div class="tooltip-box">
+
+                                                Select the mammogram view used for the
+
+                                                uploaded image.
+
+                                            </div>
+
+
+
+                                        </div>
+
+
+
+                                    </div>
+
+
+
+                                    <select name="image_view" required>
+
+
+
+                                        <option
+
+                                            value=""
+
+                                            disabled
+
+                                            selected
+
+                                        >
+
+                                            Select view
+
+                                        </option>
+
+
+
+                                        <option value="CC">
+
+                                            CC - Craniocaudal
+
+                                        </option>
+
+
+
+                                        <option value="MLO">
+
+                                            MLO - Mediolateral Oblique
+
+                                        </option>
+
+
+
+                                    </select>
+
+
+
+                                </div>
+
+
+
+
+
+                                <!-- BREAST SIDE -->
+
+                                <div class="field">
+
+
+
+                                    <div class="field-label-row">
+
+
+
+                                        <label>
+
+                                            Breast Side
+
+                                            <span class="required">*</span>
+
+                                        </label>
+
+
+
+                                        <div class="tooltip-wrap">
+
+
+
+                                            <div class="tooltip-icon">
+
+                                                i
+
+                                            </div>
+
+
+
+                                            <div class="tooltip-box">
+
+                                                Select whether the uploaded mammogram
+
+                                                is from the left or right breast.
+
+                                            </div>
+
+
+
+                                        </div>
+
+
+
+                                    </div>
+
+
+
+                                    <select name="breast_side" required>
+
+
+
+                                        <option
+
+                                            value=""
+
+                                            disabled
+
+                                            selected
+
+                                        >
+
+                                            Select side
+
+                                        </option>
+
+
+
+                                        <option value="LEFT">
+
+                                            Left Breast
+
+                                        </option>
+
+
+
+                                        <option value="RIGHT">
+
+                                            Right Breast
+
+                                        </option>
+
+
+
+                                    </select>
+
+
+
+                                </div>
+
+
+
+                            </div>
+
+
+
+
+
+                            <!-- MENOPAUSAL STATUS + PRIOR BIOPSY -->
+
+                            <div class="field-row">
+
+
+
+
+
+                                <!-- MENOPAUSAL STATUS -->
+
+                                <div class="field">
+
+
+
+                                    <div class="field-label-row">
+
+
+
+                                        <label>
+
+                                            Menopausal Status
+
+                                        </label>
+
+
+
+                                        <div class="tooltip-wrap">
+
+
+
+                                            <div class="tooltip-icon">
+
+                                                i
+
+                                            </div>
+
+
+
+                                            <div class="tooltip-box">
+
+                                                Menopause is when a woman's
+
+                                                monthly periods stop permanently,
+
+                                                usually around age 50. Women who
+
+                                                have gone through menopause have
+
+                                                a higher risk of breast cancer
+
+                                                than those who have not.
+
+                                            </div>
+
+
+
+                                        </div>
+
+
+
+                                    </div>
+
+
+
 
 
                                     <select name="menopause">
 
+
+
                                         <option value="0">
+
                                             Pre-menopausal
+
                                         </option>
+
+
 
                                         <option value="1">
+
                                             Post-menopausal
+
                                         </option>
 
+
+
                                     </select>
+
+
 
                                 </div>
 
 
+
+
+
                                 <!-- PRIOR BIOPSY -->
+
                                 <div class="field">
+
+
 
                                     <div class="field-label-row">
 
+
+
                                         <label>
+
                                             Prior Biopsy
+
                                         </label>
+
+
 
                                         <div class="tooltip-wrap">
 
+
+
                                             <div class="tooltip-icon">
+
                                                 i
+
                                             </div>
+
+
 
                                             <div class="tooltip-box">
+
                                                 A biopsy is a procedure where
+
                                                 a small sample of breast tissue
+
                                                 is removed and tested for cancer.
+
                                                 If the patient has had a biopsy
+
                                                 before, even if the result was
+
                                                 benign, it slightly increases
+
                                                 future cancer risk.
+
                                             </div>
 
+
+
                                         </div>
+
+
 
                                     </div>
 
 
+
+
+
                                     <select name="prior_biopsy">
 
+
+
                                         <option value="0">
+
                                             No
+
                                         </option>
 
+
+
                                         <option value="1">
+
                                             Yes
+
                                         </option>
+
+
 
                                     </select>
 
+
+
                                 </div>
 
+
+
                             </div>
+
+
+
 
 
                             <!-- ADDITIONAL NOTES -->
+
                             <div class="field">
 
+
+
                                 <label>
+
                                     Additional Clinical Notes
+
                                 </label>
 
+
+
                                 <textarea
+
                                     name="notes"
+
                                     placeholder="Enter any additional clinical observations or notes here..."
+
                                     rows="3"
+
                                 ></textarea>
+
+
 
                             </div>
 
+
+
                         </div>
+
                         <!-- END CLINICAL FIELDS -->
 
 
+
+
+
                     </div>
-                    <!-- END RIGHT CLINICAL DATA CARD -->
+
+                                        <!-- END RIGHT CLINICAL DATA CARD -->
+
+                    <aside class="analysis-rail" aria-label="Analysis guidance">
+                      <section class="rail-card model-card">
+                        <div class="rail-title"><span class="rail-icon">✧</span><h3>About the AI Model</h3></div>
+                        <p>This prototype uses a hybrid CNN–SVM workflow to support mammogram assessment alongside the patient's clinical information.</p>
+                        <ul class="model-list">
+                          <li><span>✓</span> Image feature extraction (CNN)</li>
+                          <li><span>✓</span> Classification (SVM)</li>
+                          <li><span>✓</span> Grad-CAM visual explanation</li>
+                          <li><span>✓</span> SHAP feature importance</li>
+                        </ul>
+                      </section>
+                      <section class="rail-card image-types-card">
+                        <div class="rail-title"><span class="rail-icon">▧</span><h3>Image Upload Tips</h3></div>
+                        <div class="image-type-grid"><div><span class="mini-image">M</span><small>Mammogram</small></div><div><span class="mini-image">CC</span><small>CC view</small></div><div><span class="mini-image">MLO</span><small>MLO view</small></div></div>
+                        <p class="rail-muted">Use clear, focused mammogram images in the file formats accepted by the upload field. Check the upload instructions before submitting.</p>
+                      </section>
+                      <section class="rail-card safety-card">
+                        <div class="rail-title"><span class="safety-shield">✓</span><h3>Important Note</h3></div>
+                        <p>This system is a decision-support prototype. Its output is not a diagnosis and does not replace professional medical judgement or established clinical assessment.</p>
+                      </section>
+                    </aside>
 
                 </div>
                 <!-- END FORM GRID -->
 
 
+
+
+
                 <!-- LIVE RISK PREVIEW -->
+
                 <div
+
                     class="live-risk-panel"
+
                     id="liveRiskPanel"
+
                 >
+
+
 
                     <div class="live-risk-header">
 
+
+
                         <span>
+
                             ⚡ Live Risk Preview
+
                         </span>
+
+
 
                         <span class="live-risk-badge">
+
                             Real-time
+
                         </span>
 
+
+
                     </div>
 
 
+
+
+
                     <div
+
                         class="live-risk-score"
+
                         id="liveRiskScore"
+
                     >
+
                         --
+
                     </div>
+
+
+
 
 
                     <div
+
                         class="live-risk-label"
+
                         id="liveRiskLabel"
+
                     >
+
                         Fill in patient details to see live risk estimate
+
                     </div>
+
+
+
 
 
                     <div class="live-risk-bar">
 
+
+
                         <div
+
                             class="live-risk-fill"
+
                             id="liveRiskFill"
+
                             style="width: 0%"
+
                         ></div>
+
+
 
                     </div>
 
 
+
+
+
                     <div
+
                         class="live-risk-factors"
+
                         id="liveRiskFactors"
+
                     ></div>
+
+
 
                 </div>
 
 
+
+
+
                 <!-- SUBMIT BUTTON -->
+
                 <div class="submit-area">
 
+
+
                     <button
+
                         type="submit"
+
                         class="btn-analyse"
+
                         id="submitBtn"
+
                     >
 
+
+
                         <span class="btn-icon">
+
                             🔬
+
                         </span>
 
+
+
                         <span class="btn-text">
+
                             Run AI Analysis
+
                         </span>
+
+
 
                     </button>
 
 
+
+
+
                     <p class="submit-note">
+
                         The system will analyse the mammogram and clinical data
+
                         using the hybrid CNN-SVM model and generate an explainable report.
+
                     </p>
 
+
+
                 </div>
+
+
+
 
 
             </form>
 
+
+
         </div>
+
+
 
     </section>
 
 
-    <!-- HOW IT WORKS SECTION -->
-    <section class="how-section">
 
-        <div class="container">
-
-            <h2 class="section-title">
-                How the System Works
-            </h2>
-
-
-            <div class="steps-grid">
-
-
-                <!-- STEP 01 -->
-                <div class="step">
-
-                    <div class="step-num">
-                        01
-                    </div>
-
-                    <div class="step-icon">
-                        📤
-                    </div>
-
-                    <h4>
-                        Upload & Input
-                    </h4>
-
-                    <p>
-                        Upload the mammogram image and enter the patient
-                        clinical data including age, BI-RADS score,
-                        and family history.
-                    </p>
-
-                </div>
-
-
-                <div class="step-arrow">
-                    →
-                </div>
-
-
-                <!-- STEP 02 -->
-                <div class="step">
-
-                    <div class="step-num">
-                        02
-                    </div>
-
-                    <div class="step-icon">
-                        🧠
-                    </div>
-
-                    <h4>
-                        CNN Feature Extraction
-                    </h4>
-
-                    <p>
-                        The VGG16 Convolutional Neural Network automatically
-                        extracts hierarchical features from the mammogram image.
-                    </p>
-
-                </div>
-
-
-                <div class="step-arrow">
-                    →
-                </div>
-
-
-                <!-- STEP 03 -->
-                <div class="step">
-
-                    <div class="step-num">
-                        03
-                    </div>
-
-                    <div class="step-icon">
-                        ⚖️
-                    </div>
-
-                    <h4>
-                        SVM Classification
-                    </h4>
-
-                    <p>
-                        The Support Vector Machine classifies the case as
-                        Benign or Malignant using both image features
-                        and clinical data.
-                    </p>
-
-                </div>
-
-
-                <div class="step-arrow">
-                    →
-                </div>
-
-
-                <!-- STEP 04 -->
-                <div class="step">
-
-                    <div class="step-num">
-                        04
-                    </div>
-
-                    <div class="step-icon">
-                        📊
-                    </div>
-
-                    <h4>
-                        Explainable Report
-                    </h4>
-
-                    <p>
-                        Grad-CAM highlights suspicious image regions and
-                        SHAP values explain which clinical factors influenced
-                        the decision.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
 
 
     <!-- FOOTER -->
+
     <footer class="footer">
+
+
 
         <div class="footer-content">
 
-            <p>
-                MDSS — Hybrid AI Model for Breast Cancer Detection
-            </p>
+
 
             <p>
-                Developed by Subgroup 3 · AAUA Faculty of Computing ·
-                CSC Department · Supervised by Dr. Ogbeide
+
+                MDSS — Hybrid AI Model for Breast Cancer Detection
+
             </p>
+
+
+
+            <p>
+
+                Developed by Subgroup 3 · AAUA Faculty of Computing ·
+
+                CSC Department · Supervised by Dr. Ogbeide
+
+            </p>
+
+
 
         </div>
+
+
 
     </footer>
 
 
+
+
+
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
+
+
+  </main>
+</div>
+
+
+<!-- Floating local-knowledge chatbot -->
+{% if current_user.is_authenticated %}
+<button class="mdss-chat-launcher" id="mdssChatLauncher" type="button" aria-label="Open MDSS assistant" aria-expanded="false"><img src="{{ url_for('static', filename='images/aaua-logo.png') }}" alt="AAUA school logo"></button>
+<section class="mdss-chat-panel" id="mdssChatPanel" aria-label="MDSS assistant" aria-hidden="true" inert>
+  <header class="mdss-chat-head"><div class="mdss-chat-brand"><img class="mdss-chat-logo" src="{{ url_for('static', filename='images/aaua-logo.png') }}" alt="AAUA school logo"><div class="mdss-chat-brand-copy"><strong>MDSS Assistant</strong><small>Local knowledge-based help · Educational use</small></div></div><button class="mdss-chat-close" id="mdssChatClose" type="button" aria-label="Close assistant">×</button></header>
+  <div class="mdss-chat-body" id="mdssChatBody" aria-live="polite">
+    <div class="mdss-chat-msg bot">Hello! I can explain MDSS concepts such as BI-RADS, Grad-CAM, SHAP, model confidence, and the screening workflow. I cannot diagnose or replace a healthcare professional.</div>
+    <div class="mdss-chat-prompts"><button type="button" data-question="What is BI-RADS?">What is BI-RADS?</button><button type="button" data-question="Explain Grad-CAM">Grad-CAM</button><button type="button" data-question="What is SHAP?">SHAP</button><button type="button" data-question="What does confidence mean?">Confidence score</button></div>
+  </div>
+  <form class="mdss-chat-form" id="mdssChatForm"><input id="mdssChatInput" type="text" maxlength="1000" placeholder="Ask an educational question…" autocomplete="off" aria-label="Message the MDSS assistant" required><button type="submit" id="mdssChatSend">Send</button></form>
+  <div class="mdss-chat-note">Educational information only. Avoid entering names, contact details, or other identifying medical information. Not for emergency advice.</div>
+</section>
+<script>
+(function(){
+  const launcher=document.getElementById('mdssChatLauncher');
+  const panel=document.getElementById('mdssChatPanel');
+  const closeBtn=document.getElementById('mdssChatClose');
+  const body=document.getElementById('mdssChatBody');
+  const form=document.getElementById('mdssChatForm');
+  const input=document.getElementById('mdssChatInput');
+  const send=document.getElementById('mdssChatSend');
+  if(!launcher||!panel||!body||!form||!input||!send)return;
+  const history=[];
+  function toggle(open){panel.classList.toggle('open',open);panel.setAttribute('aria-hidden',String(!open));panel.toggleAttribute('inert',!open);launcher.setAttribute('aria-expanded',String(open));if(open)setTimeout(()=>input.focus(),180)}
+  function addMessage(text,role){const el=document.createElement('div');el.className='mdss-chat-msg '+role;el.textContent=text;body.appendChild(el);body.scrollTop=body.scrollHeight;return el}
+  launcher.addEventListener('click',()=>toggle(!panel.classList.contains('open')));
+  closeBtn.addEventListener('click',()=>toggle(false));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('open'))toggle(false)});
+  body.querySelectorAll('[data-question]').forEach(btn=>btn.addEventListener('click',()=>{input.value=btn.dataset.question;form.requestSubmit()}));
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();const message=input.value.trim();if(!message)return;
+    addMessage(message,'user');history.push({role:'user',content:message});input.value='';send.disabled=true;send.textContent='…';
+    const pending=addMessage('Thinking…','bot');
+    try{
+      const response=await fetch('{{ url_for("chatbot_api") }}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history})});
+      const data=await response.json();if(!response.ok)throw new Error(data.error||'The assistant could not respond.');
+      const reply=data.reply||data.response||'I could not find an answer to that question.';pending.textContent=reply;history.push({role:'assistant',content:reply});
+    }catch(err){pending.textContent='Sorry, I could not connect to the local assistant. Please try again.';}
+    finally{send.disabled=false;send.textContent='Send';body.scrollTop=body.scrollHeight;input.focus()}
+  });
+})();
+</script>
+{% endif %}
+
 </body>
+
 </html>

@@ -6,14 +6,51 @@
     <title>Analysis Results - MDSS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+<style>
+:root{--navy:#082f5b;--blue:#087cc1;--teal:#16a3b5;--ink:#18324b;--muted:#64748b;--line:#dce8f2;--pale:#eaf5fc;--white:#fff;--shadow:0 12px 32px rgba(8,47,91,.08)}
+*{box-sizing:border-box}
+body{margin:0;background:#f4f8fc;color:var(--ink);font-family:Inter,Arial,sans-serif;line-height:1.6}
+.navbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:13px clamp(18px,4vw,58px);background:#fff;border-bottom:1px solid var(--line);box-shadow:0 4px 18px rgba(8,47,91,.04)}
+.nav-logo{display:flex;align-items:center;gap:12px}.logo-icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}.logo-icon img{width:100%;height:100%;object-fit:contain;padding:4px}.logo-title{display:block;color:var(--navy);font-size:20px;font-weight:800;letter-spacing:.02em}.logo-sub{display:block;color:var(--muted);font-size:11px}
+.nav-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.nav-link,.nav-logout{font-size:13px;font-weight:700;text-decoration:none;border-radius:9px;padding:9px 13px}.nav-link{color:var(--navy);background:var(--pale)}.nav-logout{background:var(--navy);color:white}.nav-badge{background:#f1f6fb;color:var(--navy);border:1px solid var(--line);border-radius:999px;padding:7px 11px;font-size:12px;font-weight:700}
+.result-hero{background:linear-gradient(120deg,#082f5b 0%,#075c99 60%,#087cc1 100%);color:white;padding:38px clamp(18px,5vw,72px);position:relative;overflow:hidden}.result-hero:after{content:"";position:absolute;width:320px;height:320px;border:1px solid rgba(255,255,255,.12);border-radius:50%;right:-70px;top:-160px;box-shadow:0 0 0 35px rgba(255,255,255,.035),0 0 0 75px rgba(255,255,255,.025)}.result-hero-content{max-width:1320px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:22px;position:relative;z-index:1}.result-title{font-size:clamp(28px,3vw,38px);font-weight:800;letter-spacing:-.035em;line-height:1.2}.result-sub{color:#d8eafb;font-size:13px;margin-top:10px}.result-badge{display:inline-flex;align-items:center;justify-content:center;text-align:center;padding:12px 18px;border:1px solid rgba(255,255,255,.3);border-radius:12px;background:rgba(255,255,255,.12);font-size:14px;font-weight:800;max-width:330px}.result-section{padding:32px 18px 54px}.container{max-width:1320px;margin:0 auto}.results-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;margin-bottom:22px}.result-card{min-width:0;background:white;border:1px solid var(--line);border-radius:18px;padding:clamp(20px,2.5vw,30px);box-shadow:var(--shadow);margin-bottom:0!important}.result-card-title{font-size:17px;font-weight:800;color:var(--navy);margin-bottom:20px;display:flex;align-items:center;gap:10px}.result-card-title:before{content:"";width:4px;height:22px;border-radius:5px;background:var(--teal);display:inline-block}.prediction-value{font-size:clamp(27px,3vw,38px);font-weight:800;letter-spacing:-.03em}.prediction-value.benign,.result-badge.benign{color:#087443}.prediction-value.malignant,.result-badge.malignant{color:#b42318}.confidence-label{font-size:12px;color:var(--muted);font-weight:700;margin:8px 0}.confidence-bar,.shap-bar-track{height:9px;background:#e7eef5;border-radius:999px;overflow:hidden}.confidence-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue));border-radius:999px;transition:width .5s}.risk-tiers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.risk-tier{padding:11px 6px;border-radius:10px;text-align:center;background:#f2f6fa;border:1px solid transparent;color:#526579;font-size:12px;font-weight:800}.risk-tier span{font-size:10px!important}.risk-tier.low.active{background:#e6f7ef;border-color:#8ed8b6;color:#087443}.risk-tier.medium.active{background:#fff4d9;border-color:#f2d17a;color:#8b5a00}.risk-tier.high.active{background:#fff0ef;border-color:#f2b5b0;color:#b42318}.risk-action{padding:14px 16px;background:var(--pale);border-left:3px solid var(--teal);border-radius:8px;color:#24445f;font-size:13px;line-height:1.7}.heatmap-img{width:100%;max-height:390px;object-fit:contain;background:#0b1220;border-radius:12px;padding:8px}.heatmap-note{font-size:12px;color:#475569;background:#fff7e6;border:1px solid #f4dfad;padding:12px 14px;border-radius:9px;line-height:1.7}.shap-bar-item{display:grid;grid-template-columns:minmax(95px, .8fr) minmax(80px,1.5fr) auto;align-items:center;gap:12px;margin:14px 0}.shap-label{font-size:12px;color:#334e68;font-weight:700;overflow-wrap:anywhere}.shap-bar-fill{height:100%;min-height:9px;background:linear-gradient(90deg,var(--teal),var(--blue));border-radius:999px}.shap-val{font-size:12px;color:var(--muted);font-weight:700;max-width:90px;overflow-wrap:anywhere}.actions-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:flex-end;padding:18px 0}.actions-bar a,.actions-bar button{border:0;border-radius:10px;padding:12px 17px;font:700 13px Inter,Arial,sans-serif;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;min-height:44px}.btn-new{background:#eaf5fc;color:var(--navy)}.btn-print{background:#fff;border:1px solid var(--line)!important;color:var(--navy)}.btn-pdf{background:var(--navy);color:#fff}.footer{background:#06264a;color:#d9e8f5;padding:24px 18px;text-align:center}.footer-content p{margin:5px 0;font-size:12px}.footer-content p:first-child{font-weight:800;color:white;font-size:14px}
+@media(max-width:850px){.result-hero-content{align-items:flex-start;flex-direction:column}.results-grid{grid-template-columns:1fr}.result-section{padding-top:22px}.nav-badge{display:none}}
+@media(max-width:560px){.navbar{align-items:flex-start;padding:12px;gap:10px}.logo-icon{width:40px;height:40px}.logo-title{font-size:17px}.logo-sub{font-size:10px}.nav-right{justify-content:flex-end;gap:6px}.nav-link,.nav-logout{font-size:11px;padding:8px}.result-hero{padding:28px 18px}.result-title{font-size:28px}.result-sub{font-size:12px}.result-badge{font-size:12px;padding:10px 12px}.result-card{padding:18px;border-radius:14px}.shap-bar-item{grid-template-columns:1fr auto;gap:7px}.shap-bar-track{grid-column:1/-1;grid-row:2}.shap-val{grid-column:2;grid-row:1}.actions-bar{display:grid;grid-template-columns:1fr}.actions-bar a,.actions-bar button,.actions-bar form,.actions-bar form button{width:100%}}
+@media print{body{background:white}.navbar,.actions-bar,.footer{display:none!important}.result-hero{background:white!important;color:#102a43!important;padding:15px 0;border-bottom:2px solid #dbe5ef}.result-hero:after{display:none}.result-sub{color:#526579}.result-badge{color:#102a43!important;border:1px solid #cbd5e1;background:white}.result-section{padding:15px 0}.result-card{box-shadow:none;break-inside:avoid;border:1px solid #cbd5e1;padding:16px}.results-grid{gap:12px}.heatmap-img{max-height:260px}.footer{display:block!important;background:white;color:#526579}}
+</style>
+
+
+<style id="mdss-floating-chatbot-styles">
+/* Floating local MDSS assistant */
+  .mdss-chat-launcher{position:fixed;right:24px;bottom:22px;z-index:2147483000;width:60px;height:60px;border:3px solid #fff;border-radius:50%;background:#fff;padding:3px;box-shadow:0 10px 28px #082f5b45;cursor:pointer;display:grid;place-items:center;overflow:hidden;transition:transform .25s ease,box-shadow .25s ease}
+  .mdss-chat-launcher img{width:100%;height:100%;object-fit:contain;border-radius:50%;display:block}
+  .mdss-chat-launcher:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 14px 32px #082f5b55}
+  .mdss-chat-panel{position:fixed;right:24px;bottom:94px;z-index:2147483001;width:min(370px,calc(100vw - 28px));height:min(530px,calc(100vh - 125px));background:#fff;border:1px solid #dce8f1;border-radius:18px;box-shadow:0 18px 55px #082f5b30;display:flex;overflow:hidden;flex-direction:column;font-family:Inter,Arial,sans-serif;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(18px) scale(.96);transform-origin:bottom right;transition:opacity .24s ease,transform .28s cubic-bezier(.2,.8,.2,1),visibility .28s ease}
+  .mdss-chat-panel.open{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0) scale(1)}
+  .mdss-chat-head{background:linear-gradient(120deg,#082f5b,#087cc1);color:#fff;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .mdss-chat-brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .mdss-chat-logo{width:38px;height:38px;flex:0 0 38px;background:#fff;border-radius:50%;padding:3px;object-fit:contain}
+  .mdss-chat-brand-copy{min-width:0}
+  .mdss-chat-head{background:linear-gradient(120deg,#082f5b,#087cc1);color:#fff;padding:15px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .mdss-chat-head strong{font-size:14px;display:block}.mdss-chat-head small{display:block;font-size:10px;opacity:.85;margin-top:4px}
+  .mdss-chat-close{border:1px solid #ffffff55;background:#ffffff18;color:white;border-radius:8px;width:31px;height:31px;cursor:pointer;font-size:18px}
+  .mdss-chat-body{padding:14px;overflow-y:auto;flex:1;background:#f5f9fc;display:flex;flex-direction:column;gap:10px}
+  .mdss-chat-msg{max-width:91%;white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 12px;border-radius:12px;font-size:12px;line-height:1.55}
+  .mdss-chat-msg.bot{align-self:flex-start;background:#fff;color:#28445d;border:1px solid #e1ebf3;border-top-left-radius:4px}
+  .mdss-chat-msg.user{align-self:flex-end;background:#087cc1;color:#fff;border-top-right-radius:4px}
+  .mdss-chat-prompts{display:flex;flex-wrap:wrap;gap:6px}.mdss-chat-prompts button{border:1px solid #cfe2f0;background:#fff;color:#075b91;border-radius:20px;padding:7px 9px;font-size:10px;cursor:pointer}
+  .mdss-chat-form{display:flex;gap:8px;padding:11px;border-top:1px solid #e1ebf3;background:#fff}.mdss-chat-form input{min-width:0;flex:1;border:1px solid #d5e3ed;border-radius:10px;padding:11px;font:inherit;font-size:12px;outline:none}.mdss-chat-form input:focus{border-color:#087cc1}.mdss-chat-form button{border:0;border-radius:10px;background:#087cc1;color:#fff;font-size:12px;font-weight:700;padding:0 14px;cursor:pointer}.mdss-chat-note{padding:0 12px 10px;background:#fff;color:#7a8da0;font-size:9px;line-height:1.45}
+  @media(max-width:520px){.mdss-chat-launcher{right:16px;bottom:16px;width:54px;height:54px}.mdss-chat-panel{right:12px;bottom:80px;width:calc(100vw - 24px);height:min(560px,calc(100vh - 100px))}}
+  @media(prefers-reduced-motion:reduce){.mdss-chat-launcher,.mdss-chat-panel{transition:none!important}}
+</style>
 </head>
 <body>
-
     <!-- NAVIGATION BAR -->
     <nav class="navbar">
         <div class="nav-left">
             <div class="nav-logo">
-                <div class="logo-icon">+</div>
+                <div class="logo-icon"><img src="{{ url_for('static', filename='images/aaua-logo.png') }}" alt="AAUA logo"></div>
                 <div>
                     <span class="logo-title">MDSS</span>
                     <span class="logo-sub">Medical Decision Support System</span>
@@ -27,7 +64,6 @@
             <a href="/logout" class="nav-logout">Sign Out</a>
         </div>
     </nav>
-
     <!-- RESULT HERO -->
     <section class="result-hero">
         <div class="result-hero-content">
@@ -44,14 +80,11 @@
             </div>
         </div>
     </section>
-
     <!-- RESULTS SECTION -->
     <section class="result-section">
         <div class="container">
-
             <!-- ROW 1: Prediction + Risk Score -->
             <div class="results-grid">
-
                 <!-- Prediction Card -->
                 <div class="result-card">
                     <div class="result-card-title">AI Prediction</div>
@@ -69,10 +102,9 @@
                         <strong>Data Fusion:</strong> Image + Clinical Features
                     </div>
                 </div>
-
                 <!-- Risk Score Card -->
                 <div class="result-card">
-                    <div class="result-card-title">Risk Assessment</div>
+                    <div class="result-card-title">MDSS Risk Index</div>
                     <div class="risk-tiers">
                         <div class="risk-tier low {{ 'active' if risk_level == 'LOW' else '' }}">
                             LOW<br><span style="font-size:10px;font-weight:400">Below 30%</span>
@@ -88,7 +120,7 @@
                         {{ risk_level }} RISK
                     </div>
                     <div style="font-size:13px;color:#475569;margin-bottom:14px;">
-                        Risk Score: {{ risk_score }}%
+                        MDSS Risk Index: {{ risk_score }}%
                     </div>
                     <div class="risk-action">
                         <strong>Recommended Action:</strong><br>
@@ -96,20 +128,16 @@
                     </div>
                     <br>
                     <div style="font-size:12px;color:#94A3B8;line-height:1.6;">
-                        Risk score combines the model malignancy probability with BI-RADS category, patient age, family history, and breast density using a weighted clinical formula.
+                        This prototype index combines the trained SVM malignancy probability with the entered BI-RADS category using a weighted heuristic. It is not a calibrated clinical risk probability and should not be interpreted as a diagnosis.
                     </div>
                 </div>
-
             </div>
-
             <!-- ROW 2: Grad-CAM + SHAP -->
             <div class="results-grid">
-
                 <!-- Grad-CAM Card -->
                 <!-- Grad-CAM Card -->
 <div class="result-card">
     <div class="result-card-title">Grad-CAM Visual Explanation</div>
-
     {% if image_count > 1 %}
     <div style="font-size:13px;color:#475569;margin-bottom:12px;">
         {{ image_count }} mammogram images analysed. Heatmaps shown below:
@@ -136,21 +164,19 @@
     >
     {% endif %}
                     <div class="heatmap-note">
-                        🔴 Red/orange regions indicate areas the CNN focused on most when making its prediction.
+                        🔴 Red/orange regions indicate areas that contributed most strongly to the VGG16 feature representation used by the system.
                     </div>
                     <br>
                     <div style="font-size:12px;color:#94A3B8;line-height:1.6;">
-                        <strong>Method:</strong> Gradient-weighted Class Activation Mapping (Grad-CAM) computes the gradient of the class score with respect to the last convolutional layer of the VGG16 network to produce this heatmap.
+                        <strong>Method:</strong> Grad-CAM uses gradients within the VGG16 feature extractor to highlight image regions that contribute strongly to its learned feature representation. Because the final classifier is an RBF-SVM, this heatmap explains the VGG16 representation rather than the SVM decision directly.
                     </div>
                 </div>
-
                 <!-- SHAP Card -->
                 <div class="result-card">
                     <div class="result-card-title">SHAP Feature Importance</div>
                     <div style="font-size:13px;color:#475569;margin-bottom:18px;">
-                        The chart below shows how much each clinical factor contributed to the prediction.
+                        The chart below shows how each structured model feature contributed to this individual prediction. Positive values push the model toward malignant probability; negative values push it in the opposite direction.
                     </div>
-
                     {% for feature in shap_features %}
                     <div class="shap-bar-item">
                         <div class="shap-label">{{ feature.name }}</div>
@@ -160,20 +186,16 @@
                         <div class="shap-val">{{ feature.value }}</div>
                     </div>
                     {% endfor %}
-
                     <br>
                     <div style="font-size:12px;color:#94A3B8;line-height:1.6;">
                         <strong>Method:</strong> SHapley Additive Explanations (SHAP) uses game theory principles to assign each clinical feature a contribution score.
                     </div>
                 </div>
-
             </div>
-
             <!-- ROW 3: Clinical Summary -->
             <div class="result-card" style="margin-bottom:24px;">
                 <div class="result-card-title">Clinical Summary Report</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;">
-
                     <div>
                         <div style="font-size:12px;color:#94A3B8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Patient Information</div>
                         <div style="font-size:14px;color:#1E293B;line-height:2;">
@@ -185,19 +207,17 @@
                             <strong>Prior Biopsy:</strong> {{ prior_biopsy }}
                         </div>
                     </div>
-
                     <div>
                         <div style="font-size:12px;color:#94A3B8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">AI Analysis Result</div>
                         <div style="font-size:14px;color:#1E293B;line-height:2;">
                             <strong>Prediction:</strong> {{ prediction }}<br>
                             <strong>Confidence:</strong> {{ confidence }}%<br>
                             <strong>Risk Level:</strong> {{ risk_level }}<br>
-                            <strong>Risk Score:</strong> {{ risk_score }}%<br>
+                            <strong>MDSS Risk Index:</strong> {{ risk_score }}%<br>
                             <strong>Model:</strong> Hybrid CNN-SVM<br>
                             <strong>Date:</strong> {{ timestamp }}
                         </div>
                     </div>
-
                     <div>
                         <div style="font-size:12px;color:#94A3B8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Clinical Recommendation</div>
                         <div style="font-size:14px;color:#1E293B;line-height:1.8;">
@@ -205,18 +225,15 @@
                         </div>
                         <br>
                         <div style="font-size:12px;color:#94A3B8;line-height:1.6;">
-                            ⚠️ This AI-generated report is intended to support, not replace, clinical judgement.
+                            ⚠️ This AI-generated prototype is intended to support, not replace, clinical judgement. Model outputs and explanations should be reviewed by a qualified healthcare professional.
                         </div>
                     </div>
-
                 </div>
             </div>
-
             <!-- ACTIONS -->
             <div class="actions-bar">
                 <a href="/" class="btn-new">← New Analysis</a>
                 <button class="btn-print" onclick="printReport()">🖨️ Print Report</button>
-
                 <!-- PDF Download Form -->
                 <form action="/download-report" method="POST" style="display:inline;">
                     <input type="hidden" name="prediction" value="{{ prediction }}">
@@ -231,6 +248,7 @@
                     <input type="hidden" name="menopause" value="{{ menopause }}">
                     <input type="hidden" name="prior_biopsy" value="{{ prior_biopsy }}">
                     <input type="hidden" name="timestamp" value="{{ timestamp }}">
+                    <input type="hidden" name="heatmap_filename" value="{{ heatmap_filename }}">
                     {% for feature in shap_features %}
                     <input type="hidden" name="shap_names[]" value="{{ feature.name }}">
                     <input type="hidden" name="shap_values[]" value="{{ feature.value }}">
@@ -238,10 +256,8 @@
                     <button type="submit" class="btn-pdf">📄 Download PDF Report</button>
                 </form>
             </div>
-
         </div>
     </section>
-
     <!-- FOOTER -->
     <footer class="footer">
         <div class="footer-content">
@@ -249,8 +265,50 @@
             <p>Developed by Subgroup 3 · AAUA Faculty of Computing · CSC Department · Supervised by Dr. Ogbeide</p>
         </div>
     </footer>
-
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
+<!-- Floating local-knowledge chatbot: visible to authenticated users only -->
+{% if current_user.is_authenticated %}
+<button class="mdss-chat-launcher" id="mdssChatLauncher" type="button" aria-label="Open MDSS assistant" aria-expanded="false"><img src="{{ url_for('static', filename='images/aaua-logo.png') }}" alt="AAUA school logo"></button>
+<section class="mdss-chat-panel" id="mdssChatPanel" aria-label="MDSS assistant" aria-hidden="true" inert>
+  <header class="mdss-chat-head"><div class="mdss-chat-brand"><img class="mdss-chat-logo" src="{{ url_for('static', filename='images/aaua-logo.png') }}" alt="AAUA school logo"><div class="mdss-chat-brand-copy"><strong>MDSS Assistant</strong><small>Local knowledge-based help · Educational use</small></div></div><button class="mdss-chat-close" id="mdssChatClose" type="button" aria-label="Close assistant">×</button></header>
+  <div class="mdss-chat-body" id="mdssChatBody" aria-live="polite">
+    <div class="mdss-chat-msg bot">Hello! I can explain MDSS concepts such as BI-RADS, Grad-CAM, SHAP, model confidence, and the screening workflow. I cannot diagnose or replace a healthcare professional.</div>
+    <div class="mdss-chat-prompts"><button type="button" data-question="What is BI-RADS?">What is BI-RADS?</button><button type="button" data-question="Explain Grad-CAM">Grad-CAM</button><button type="button" data-question="What is SHAP?">SHAP</button><button type="button" data-question="What does confidence mean?">Confidence score</button></div>
+  </div>
+  <form class="mdss-chat-form" id="mdssChatForm"><input id="mdssChatInput" type="text" maxlength="1000" placeholder="Ask an educational question…" autocomplete="off" aria-label="Message the MDSS assistant" required><button type="submit" id="mdssChatSend">Send</button></form>
+  <div class="mdss-chat-note">Educational information only. Avoid entering names, contact details, or other identifying medical information. Not for emergency advice.</div>
+</section>
+<script>
+(function(){
+  const launcher=document.getElementById('mdssChatLauncher');
+  const panel=document.getElementById('mdssChatPanel');
+  const closeBtn=document.getElementById('mdssChatClose');
+  const body=document.getElementById('mdssChatBody');
+  const form=document.getElementById('mdssChatForm');
+  const input=document.getElementById('mdssChatInput');
+  const send=document.getElementById('mdssChatSend');
+  if(!launcher||!panel||!body||!form||!input||!send)return;
+  const history=[];
+  function toggle(open){panel.classList.toggle('open',open);panel.setAttribute('aria-hidden',String(!open));panel.toggleAttribute('inert',!open);launcher.setAttribute('aria-expanded',String(open));if(open)setTimeout(()=>input.focus(),180)}
+  function addMessage(text,role){const el=document.createElement('div');el.className='mdss-chat-msg '+role;el.textContent=text;body.appendChild(el);body.scrollTop=body.scrollHeight;return el}
+  launcher.addEventListener('click',()=>toggle(!panel.classList.contains('open')));
+  closeBtn.addEventListener('click',()=>toggle(false));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('open'))toggle(false)});
+  body.querySelectorAll('[data-question]').forEach(btn=>btn.addEventListener('click',()=>{input.value=btn.dataset.question;form.requestSubmit()}));
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();const message=input.value.trim();if(!message)return;
+    addMessage(message,'user');history.push({role:'user',content:message});input.value='';send.disabled=true;send.textContent='…';
+    const pending=addMessage('Thinking…','bot');
+    try{
+      const response=await fetch('{{ url_for("chatbot_api") }}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history})});
+      const data=await response.json();if(!response.ok)throw new Error(data.error||'The assistant could not respond.');
+      const reply=data.reply||data.response||'I could not find an answer to that question.';pending.textContent=reply;history.push({role:'assistant',content:reply});
+    }catch(err){pending.textContent='Sorry, I could not connect to the local assistant. Please try again.';}
+    finally{send.disabled=false;send.textContent='Send';body.scrollTop=body.scrollHeight;input.focus()}
+  });
+})();
+</script>
+{% endif %}
 </body>
 </html>

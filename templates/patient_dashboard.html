@@ -3,256 +3,361 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Results - MDSS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Patient Dashboard | MDSS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #F0F4F8; min-height: 100vh; }
-        .navbar {
-            background: #002060; padding: 0 32px; height: 64px;
-            display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 100;
+        :root {
+            --navy: #082F5B;
+            --blue: #087CC1;
+            --teal: #16A3B5;
+            --pale: #EAF5FC;
+            --ink: #16324F;
+            --muted: #718399;
+            --line: #E4EDF5;
+            --surface: #FFFFFF;
+            --page: #F5F9FC;
+            --green: #15856B;
+            --amber: #A66B08;
+            --red: #C43D52;
+            --shadow: 0 8px 28px rgba(8, 47, 91, .06);
         }
-        .nav-logo { display: flex; align-items: center; gap: 12px; }
-        .logo-icon {
-            width: 36px; height: 36px; background: #F5A623; color: #002060;
-            border-radius: 8px; display: flex; align-items: center;
-            justify-content: center; font-size: 22px; font-weight: 700;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: var(--page); color: var(--ink); min-height: 100vh; }
+        a { color: inherit; text-decoration: none; }
+        button { font: inherit; }
+        .app { min-height: 100vh; }
+        .sidebar {
+            width: 252px; background: var(--navy); color: #fff; position: fixed;
+            inset: 0 auto 0 0; display: flex; flex-direction: column; z-index: 20;
+            padding: 25px 16px 18px;
         }
-        .logo-title { color: white; font-size: 18px; font-weight: 700; }
-        .logo-sub { color: #F5A623; font-size: 11px; display: block; }
-        .nav-right { display: flex; align-items: center; gap: 12px; }
-        .nav-user { color: white; font-size: 13px; }
-        .btn-logout {
-            background: rgba(255,255,255,0.1); color: white;
-            border: 1px solid rgba(255,255,255,0.2); padding: 6px 16px;
-            border-radius: 20px; font-size: 12px; text-decoration: none;
+        .brand { display: flex; align-items: center; gap: 11px; padding: 0 9px 27px; border-bottom: 1px solid rgba(255,255,255,.12); }
+        .brand-mark { width: 42px; height: 42px; display: grid; place-items: center; background: #FFFFFF; border: 1px solid rgba(255,255,255,.35); border-radius: 10px; padding: 4px; overflow: hidden; flex-shrink: 0; }
+        .brand-mark img { display: block; width: 100%; height: 100%; object-fit: contain; }
+        .brand-name { font-size: 22px; font-weight: 800; letter-spacing: .5px; }
+        .brand-sub { display: block; margin-top: 3px; font-size: 9px; line-height: 1.4; color: #B9D3E8; max-width: 145px; }
+        .nav-label { color: #8DAFCB; font-size: 10px; letter-spacing: 1.5px; font-weight: 700; padding: 26px 12px 10px; text-transform: uppercase; }
+        .nav-list { display: grid; gap: 6px; }
+        .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 13px; border-radius: 10px; color: #D1E2F0; font-size: 13px; font-weight: 500; transition: .2s; }
+        .nav-link .nav-icon { width: 20px; text-align: center; font-size: 17px; }
+        .nav-link.active, .nav-link:hover { background: linear-gradient(100deg, #087CC1, #119DB4); color: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+        .sidebar-note { margin-top: auto; padding: 14px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; color: #C5D9E9; font-size: 11px; line-height: 1.6; }
+        .sidebar-note strong { display: block; color: white; font-size: 12px; margin-bottom: 4px; }
+        .profile-mini { display: flex; align-items: center; gap: 10px; padding: 18px 8px 0; margin-top: 16px; border-top: 1px solid rgba(255,255,255,.12); }
+        .avatar { width: 37px; height: 37px; border-radius: 50%; display: grid; place-items: center; background: #D6F2F5; color: var(--navy); font-weight: 800; flex-shrink: 0; }
+        .profile-name { font-size: 12px; font-weight: 700; max-width: 155px; overflow-wrap: anywhere; }
+        .profile-role { color: #A8C3D9; font-size: 10px; margin-top: 4px; }
+        .main { margin-left: 252px; min-height: 100vh; }
+        .topbar { height: 76px; background: #fff; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 36px; }
+        .crumb { color: var(--muted); font-size: 12px; }
+        .crumb strong { color: var(--navy); font-weight: 700; }
+        .top-actions { display: flex; align-items: center; gap: 17px; }
+        .secure-label { display: flex; align-items: center; gap: 7px; color: #58728A; font-size: 11px; }
+        .secure-dot { width: 8px; height: 8px; background: #20A582; border-radius: 50%; }
+        .logout { padding: 9px 14px; border: 1px solid #DCE7F0; border-radius: 9px; color: var(--navy); font-size: 12px; font-weight: 700; }
+        .logout:hover { background: var(--pale); }
+        .content { max-width: 1440px; margin: 0 auto; padding: 31px 36px 40px; }
+        .welcome-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 22px; margin-bottom: 26px; }
+        .eyebrow { color: var(--blue); text-transform: uppercase; font-size: 10px; font-weight: 800; letter-spacing: 1.6px; margin-bottom: 9px; }
+        h1 { font-size: clamp(25px, 2.4vw, 32px); color: var(--navy); letter-spacing: -.9px; line-height: 1.2; }
+        .welcome-copy { color: var(--muted); font-size: 13px; line-height: 1.7; margin-top: 9px; max-width: 640px; }
+        .welcome-actions { display: flex; gap: 10px; flex-shrink: 0; padding-top: 8px; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 9px; padding: 12px 16px; font-size: 12px; font-weight: 700; transition: .2s; cursor: pointer; border: 1px solid transparent; }
+        .btn-primary { color: white; background: var(--blue); box-shadow: 0 5px 14px rgba(8,124,193,.18); }
+        .btn-primary:hover { background: var(--navy); transform: translateY(-1px); }
+        .btn-secondary { background: #fff; border-color: #DCE7F0; color: var(--navy); }
+        .btn-secondary:hover { background: var(--pale); }
+        .privacy-banner { display: flex; gap: 12px; align-items: flex-start; background: linear-gradient(105deg, #EAF7FB, #F2FAFC); border: 1px solid #D5EDF2; border-radius: 12px; padding: 14px 17px; margin-bottom: 22px; }
+        .privacy-icon { width: 34px; height: 34px; display: grid; place-items: center; background: white; color: var(--teal); border-radius: 9px; flex-shrink: 0; }
+        .privacy-banner strong { display: block; color: var(--navy); font-size: 12px; margin-bottom: 3px; }
+        .privacy-banner p { color: #58728A; font-size: 11px; line-height: 1.6; }
+        .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin: 28px 0 14px; }
+        .section-heading h2 { color: var(--navy); font-size: 16px; letter-spacing: -.2px; }
+        .section-heading p { color: var(--muted); font-size: 11px; margin-top: 5px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; }
+        .stat-card { background: #fff; border: 1px solid var(--line); border-radius: 13px; padding: 19px; box-shadow: var(--shadow); min-width: 0; }
+        .stat-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .stat-icon { width: 39px; height: 39px; display: grid; place-items: center; border-radius: 11px; background: var(--pale); color: var(--blue); font-size: 19px; }
+        .stat-chip { font-size: 9px; font-weight: 700; border-radius: 20px; padding: 5px 8px; background: #F0F5F8; color: #718399; white-space: nowrap; }
+        .stat-value { font-size: 29px; font-weight: 800; letter-spacing: -.7px; color: var(--navy); margin-top: 16px; }
+        .stat-label { color: #6C8094; font-size: 11px; margin-top: 5px; }
+        .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .85fr); gap: 18px; margin-top: 22px; align-items: start; }
+        .panel { background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; min-width: 0; }
+        .panel-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 19px 21px; border-bottom: 1px solid #EEF3F7; }
+        .panel-title { color: var(--navy); font-size: 14px; font-weight: 800; }
+        .panel-subtitle { color: var(--muted); font-size: 10px; margin-top: 5px; }
+        .text-link { color: var(--blue); font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .text-link:hover { text-decoration: underline; }
+        .panel-body { padding: 19px 21px; }
+        .latest-result { border: 1px solid #E2ECF4; background: #FBFDFF; border-radius: 11px; padding: 15px; }
+        .result-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .result-date { color: var(--muted); font-size: 10px; }
+        .result-prediction { font-size: 16px; font-weight: 800; color: var(--navy); margin-top: 7px; }
+        .result-id { color: var(--muted); font-size: 10px; margin-top: 5px; }
+        .result-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; border-top: 1px solid #E7EFF5; margin-top: 16px; padding-top: 14px; }
+        .metric-label { color: var(--muted); font-size: 10px; }
+        .metric-value { color: var(--navy); font-size: 13px; font-weight: 800; margin-top: 6px; overflow-wrap: anywhere; }
+        .badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 6px 10px; font-size: 10px; font-weight: 800; white-space: nowrap; }
+        .badge.MALIGNANT, .badge.HIGH { background: #FDE9EC; color: var(--red); }
+        .badge.BENIGN, .badge.LOW { background: #E1F6EE; color: #13785E; }
+        .badge.INTERMEDIATE { background: #FFF3D6; color: var(--amber); }
+        .history-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 590px; }
+        th { background: #F5F9FC; color: #6B8095; text-align: left; padding: 12px 17px; font-size: 9px; text-transform: uppercase; letter-spacing: .7px; font-weight: 800; }
+        td { padding: 14px 17px; border-top: 1px solid #EEF3F7; color: #405A72; font-size: 11px; }
+        tbody tr:hover { background: #FBFDFF; }
+        .empty-state { text-align: center; padding: 35px 18px; }
+        .empty-icon { width: 62px; height: 62px; border-radius: 18px; background: var(--pale); color: var(--blue); display: grid; place-items: center; margin: 0 auto 15px; font-size: 28px; }
+        .empty-state h3 { color: var(--navy); font-size: 15px; margin-bottom: 8px; }
+        .empty-state p { max-width: 390px; margin: 0 auto 18px; color: var(--muted); font-size: 11px; line-height: 1.7; }
+        .side-stack { display: grid; gap: 18px; }
+        .action-card { background: linear-gradient(145deg, var(--navy), #0A527B); color: #fff; border-radius: 14px; padding: 22px; overflow: hidden; position: relative; }
+        .action-card:after { content: ''; position: absolute; width: 150px; height: 150px; border: 25px solid rgba(255,255,255,.06); border-radius: 50%; right: -55px; top: -55px; }
+        .action-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: rgba(255,255,255,.12); font-size: 20px; margin-bottom: 17px; }
+        .action-card h3 { font-size: 16px; margin-bottom: 8px; position: relative; z-index: 1; }
+        .action-card p { color: #C6DDEB; font-size: 11px; line-height: 1.7; margin-bottom: 17px; max-width: 280px; position: relative; z-index: 1; }
+        .action-card .btn { background: #fff; color: var(--navy); position: relative; z-index: 1; }
+        .guidance-list { display: grid; gap: 15px; }
+        .guidance-item { display: flex; align-items: flex-start; gap: 11px; }
+        .guidance-bullet { width: 28px; height: 28px; flex-shrink: 0; display: grid; place-items: center; border-radius: 8px; background: #E5F7F4; color: #168A7A; font-size: 13px; }
+        .guidance-item strong { display: block; color: var(--navy); font-size: 11px; margin-bottom: 4px; }
+        .guidance-item p { color: var(--muted); font-size: 10px; line-height: 1.6; }
+        .disclaimer { margin-top: 24px; border: 1px solid #F1DDAA; background: #FFFAEA; border-radius: 11px; padding: 15px 17px; display: flex; gap: 11px; color: #7C5A17; font-size: 10px; line-height: 1.7; }
+        .disclaimer strong { color: #69490A; }
+        footer { padding: 24px 15px 28px; text-align: center; color: #8A9BAA; font-size: 10px; line-height: 1.8; }
+        .mobile-menu { display: none; border: 0; background: transparent; color: var(--navy); font-size: 23px; cursor: pointer; }
+        @media (max-width: 1100px) {
+            .sidebar { width: 220px; }
+            .main { margin-left: 220px; }
+            .content { padding: 28px 24px 35px; }
+            .topbar { padding: 0 24px; }
+            .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .side-stack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
-        .hero {
-            background: linear-gradient(135deg, #002060 0%, #028090 100%);
-            padding: 48px 32px;
+        @media (max-width: 700px) {
+            .sidebar { transform: translateX(-100%); transition: transform .25s ease; width: 265px; box-shadow: 12px 0 30px rgba(0,0,0,.12); }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; }
+            .topbar { height: 64px; padding: 0 17px; }
+            .mobile-menu { display: inline-block; }
+            .crumb { margin-left: 10px; margin-right: auto; }
+            .secure-label { display: none; }
+            .top-actions { gap: 10px; }
+            .content { padding: 25px 16px 28px; }
+            .welcome-row { display: block; }
+            .welcome-actions { padding-top: 17px; }
+            .welcome-actions .btn { flex: 1; }
+            .stats-grid { gap: 10px; }
+            .stat-card { padding: 14px; }
+            .stat-value { font-size: 25px; margin-top: 12px; }
+            .stat-label { line-height: 1.5; }
+            .section-heading { margin-top: 24px; }
+            .panel-header, .panel-body { padding: 16px; }
+            .result-metrics { grid-template-columns: 1fr; }
+            .result-metrics > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+            .metric-value { margin-top: 0; }
+            .side-stack { grid-template-columns: 1fr; }
+            .privacy-banner { padding: 12px; }
         }
-        .hero-content { max-width: 1000px; margin: 0 auto; }
-        .greeting { font-size: 13px; color: #F5A623; font-weight: 600; margin-bottom: 8px; }
-        .hero-title { font-size: 32px; font-weight: 700; color: white; margin-bottom: 8px; }
-        .hero-sub { font-size: 14px; color: rgba(255,255,255,0.6); }
-        .content { max-width: 1000px; margin: 40px auto; padding: 0 24px; }
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 16px; margin-bottom: 32px;
-        }
-        .stat-card {
-            background: white; border-radius: 12px; padding: 20px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08); text-align: center;
-        }
-        .stat-icon { font-size: 28px; margin-bottom: 8px; }
-        .stat-num { font-size: 28px; font-weight: 700; color: #002060; }
-        .stat-label { font-size: 12px; color: #94a3b8; margin-top: 4px; }
-        .latest-card {
-            background: white; border-radius: 12px; padding: 28px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08); margin-bottom: 24px;
-            border-left: 4px solid #002060;
-        }
-        .latest-card h3 { font-size: 16px; font-weight: 700; color: #002060; margin-bottom: 16px; }
-        .result-summary {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;
-        }
-        .summary-item { font-size: 14px; color: #1e293b; line-height: 1.8; }
-        .summary-item strong { color: #002060; }
-        .badge {
-            display: inline-block; padding: 3px 12px; border-radius: 20px;
-            font-size: 12px; font-weight: 700;
-        }
-        .badge.MALIGNANT { background: #fee2e2; color: #C84B31; }
-        .badge.BENIGN { background: #dcfce7; color: #2C6E49; }
-        .badge.HIGH { background: #fee2e2; color: #C84B31; }
-        .badge.INTERMEDIATE { background: #fef9c3; color: #854d0e; }
-        .badge.LOW { background: #dcfce7; color: #2C6E49; }
-        .history-card {
-            background: white; border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08); overflow: hidden;
-            margin-bottom: 24px;
-        }
-        .history-header {
-            padding: 20px 24px; font-size: 16px; font-weight: 700;
-            color: #002060; border-bottom: 2px solid #f0f4f8;
-        }
-        table { width: 100%; border-collapse: collapse; }
-        th {
-            background: #002060; color: white; padding: 12px 16px;
-            font-size: 12px; text-align: left;
-        }
-        td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #f0f4f8; color: #475569; }
-        tr:hover td { background: #f8fafc; }
-        .no-results {
-            text-align: center; padding: 60px;
-            background: white; border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-        }
-        .no-results-icon { font-size: 64px; margin-bottom: 16px; }
-        .no-results h3 { font-size: 20px; color: #002060; margin-bottom: 8px; }
-        .no-results p { font-size: 14px; color: #94a3b8; max-width: 400px; margin: 0 auto; }
-        .info-box {
-            background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px;
-            padding: 20px 24px; margin-bottom: 24px; font-size: 14px;
-            color: #0369a1; line-height: 1.7;
-        }
-        .disclaimer {
-            background: #fef9c3; border: 1px solid #fde047; border-radius: 8px;
-            padding: 14px 16px; font-size: 12px; color: #854d0e;
-            margin-top: 24px; line-height: 1.6;
-        }
-        footer {
-            background: #000d1a; padding: 24px; text-align: center; margin-top: 48px;
-        }
-        footer p { color: rgba(255,255,255,0.4); font-size: 12px; line-height: 1.8; }
-        @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .result-summary { grid-template-columns: 1fr; }
-        }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; } }
     </style>
 </head>
 <body>
+<div class="app">
+    <aside class="sidebar" id="sidebar">
+        <a class="brand" href="{{ url_for('patient_dashboard') }}" aria-label="MDSS patient dashboard">
+            <div class="brand-mark"><img src="{{ url_for('static', filename='images/aaua-logo.png') }}" alt="Adekunle Ajasin University logo"></div>
+            <div><span class="brand-name">MDSS</span><span class="brand-sub">Medical Decision Support System</span></div>
+        </a>
 
-    <!-- NAVBAR -->
-    <nav class="navbar">
-        <div class="nav-logo">
-            <div class="logo-icon">+</div>
-            <div>
-                <span class="logo-title">MDSS</span>
-                <span class="logo-sub">Medical Decision Support System</span>
+        <div class="nav-label">Patient portal</div>
+        <nav class="nav-list" aria-label="Patient navigation">
+            <a class="nav-link active" href="{{ url_for('patient_dashboard') }}"><span class="nav-icon">⌂</span> Dashboard</a>
+            <a class="nav-link" href="#screening-history"><span class="nav-icon">◷</span> My Screening History</a>
+            <a class="nav-link" href="#latest-result"><span class="nav-icon">▤</span> Latest Result</a>
+            <a class="nav-link" href="#patient-guidance"><span class="nav-icon">♡</span> Health Guidance</a>
+        </nav>
+
+        <div class="nav-label">Account</div>
+        <nav class="nav-list" aria-label="Account navigation">
+            <a class="nav-link" href="/logout"><span class="nav-icon">↪</span> Sign Out</a>
+        </nav>
+
+        <div class="sidebar-note">
+            <strong>🔒 Your privacy matters</strong>
+            Your screening information is personal. Only access your account on a trusted device and sign out when finished.
+        </div>
+        <div class="profile-mini">
+            <div class="avatar">{{ (user.name.split()[0] if user.name else 'P')[0]|upper }}</div>
+            <div><div class="profile-name">{{ user.name }}</div><div class="profile-role">Patient account</div></div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <button class="mobile-menu" id="menuToggle" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">☰</button>
+            <div class="crumb">Patient Portal&nbsp; / &nbsp;<strong>Dashboard</strong></div>
+            <div class="top-actions">
+                <span class="secure-label"><span class="secure-dot"></span> Secure patient area</span>
+                <a class="logout" href="/logout">Sign out ↗</a>
             </div>
-        </div>
-        <div class="nav-right">
-            <span class="nav-user">👤 {{ user.name }}</span>
-            <a href="/logout" class="btn-logout">Sign Out</a>
-        </div>
-    </nav>
+        </header>
 
-    <!-- HERO -->
-    <section class="hero">
-        <div class="hero-content">
-            <div class="greeting">MY HEALTH PORTAL</div>
-            <h1 class="hero-title">Hello, {{ user.name.split()[0] }} 👋</h1>
-            <p class="hero-sub">Welcome to your personal health results page. Your breast cancer screening results are shown below in a simple and easy to understand format.</p>
-        </div>
-    </section>
-
-    <!-- CONTENT -->
-    <div class="content">
-
-        {% if total == 0 %}
-
-        <!-- Info box -->
-        <div class="info-box">
-            ℹ️ <strong>How this works:</strong> When your doctor runs a breast cancer screening analysis for you using the MDSS system, your results will appear here automatically. Please visit your healthcare provider and ask them to run an analysis using MDSS.
-        </div>
-
-        <!-- No results -->
-        <div class="no-results">
-            <div class="no-results-icon">🩻</div>
-            <h3>No Results Yet</h3>
-            <p>Your doctor has not uploaded any screening results for you yet. Please visit your healthcare provider.</p>
-        </div>
-
-        {% else %}
-
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">🔬</div>
-                <div class="stat-num">{{ total }}</div>
-                <div class="stat-label">Total Screenings</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🟢</div>
-                <div class="stat-num" style="color:#2C6E49;">{{ low_risk }}</div>
-                <div class="stat-label">Low Risk Results</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🟡</div>
-                <div class="stat-num" style="color:#F5A623;">{{ intermediate_risk }}</div>
-                <div class="stat-label">Medium Risk Results</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🔴</div>
-                <div class="stat-num" style="color:#C84B31;">{{ high_risk }}</div>
-                <div class="stat-label">High Risk Results</div>
-            </div>
-        </div>
-
-        <!-- Latest Result -->
-        {% if latest %}
-        <div class="latest-card">
-            <h3>📋 Your Most Recent Screening — {{ latest.timestamp }}</h3>
-            <div class="result-summary">
-                <div class="summary-item">
-                    <strong>Result:</strong><br>
-                    <span class="badge {{ latest.prediction }}">{{ latest.prediction }}</span>
-                    <br><br>
-                    <strong>Confidence:</strong> {{ latest.confidence }}%
+        <div class="content">
+            <section class="welcome-row">
+                <div>
+                    <div class="eyebrow">Your personal health space</div>
+                    <h1>Hello, {{ user.name.split()[0] if user.name else 'there' }}.</h1>
+                    <p class="welcome-copy">Welcome to your MDSS patient dashboard. Here you can review screening information shared with you by your healthcare provider and keep track of your available results.</p>
                 </div>
-                <div class="summary-item">
-                    <strong>Risk Level:</strong><br>
-                    <span class="badge {{ latest.risk_level }}">{{ latest.risk_level }} RISK</span>
-                    <br><br>
-                    <strong>Risk Score:</strong> {{ latest.risk_score }}%
+                <div class="welcome-actions">
+                    <a class="btn btn-primary" href="#screening-history">⌕ &nbsp; View my results</a>
+                    <a class="btn btn-secondary" href="#patient-guidance">♡ &nbsp; Patient guidance</a>
                 </div>
-                <div class="summary-item">
-                    <strong>What this means:</strong><br>
-                    {% if latest.risk_level == 'LOW' %}
-                    Your screening looks reassuring. Continue with routine annual mammographic screening and maintain regular self-examination.
-                    {% elif latest.risk_level == 'INTERMEDIATE' %}
-                    Your screening requires a closer look. Please return for a follow-up mammogram in 6 months and speak to your doctor.
-                    {% else %}
-                    Your screening shows signs that need urgent attention. Please contact your doctor immediately for further investigation.
-                    {% endif %}
-                </div>
+            </section>
+
+            <div class="privacy-banner">
+                <div class="privacy-icon">✦</div>
+                <div><strong>Your results, explained clearly</strong><p>MDSS provides AI-assisted information to support healthcare professionals. Your results should always be discussed with a qualified healthcare provider.</p></div>
             </div>
+
+            {% if total == 0 %}
+                <section class="section-heading">
+                    <div><h2>Your screening overview</h2><p>Your dashboard will update when screening results are available.</p></div>
+                </section>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-top"><div class="stat-icon">▤</div><span class="stat-chip">Overview</span></div><div class="stat-value">0</div><div class="stat-label">Total screenings</div></div>
+                    <div class="stat-card"><div class="stat-top"><div class="stat-icon">✓</div></div><div class="stat-value">0</div><div class="stat-label">Low risk results</div></div>
+                    <div class="stat-card"><div class="stat-top"><div class="stat-icon">◷</div></div><div class="stat-value">0</div><div class="stat-label">Intermediate risk results</div></div>
+                    <div class="stat-card"><div class="stat-top"><div class="stat-icon">!</div></div><div class="stat-value">0</div><div class="stat-label">High risk results</div></div>
+                </div>
+                <div class="dashboard-grid">
+                    <section class="panel">
+                        <div class="panel-header"><div><div class="panel-title">Your screening history</div><div class="panel-subtitle">Previous assessments shared with your account</div></div></div>
+                        <div class="empty-state">
+                            <div class="empty-icon">▤</div>
+                            <h3>No results available yet</h3>
+                            <p>Your healthcare provider has not shared any screening results with your account yet. Once a result is recorded for you in MDSS, it will appear here.</p>
+                        </div>
+                    </section>
+                    <div class="side-stack">
+                        <section class="action-card"><div class="action-icon">♡</div><h3>Stay informed about your health</h3><p>Speak with your healthcare provider about screening, your personal history, and any questions you may have.</p><a class="btn" href="#patient-guidance">View patient guidance&nbsp; →</a></section>
+                        <section class="panel" id="patient-guidance"><div class="panel-header"><div><div class="panel-title">Helpful reminders</div><div class="panel-subtitle">General information for patients</div></div></div><div class="panel-body"><div class="guidance-list"><div class="guidance-item"><div class="guidance-bullet">✓</div><div><strong>Keep in touch with your provider</strong><p>Ask your healthcare professional when screening is appropriate for you.</p></div></div><div class="guidance-item"><div class="guidance-bullet">✓</div><div><strong>Discuss questions about results</strong><p>Your provider can explain what a screening result means in your circumstances.</p></div></div></div></div></section>
+                    </div>
+                </div>
+            {% else %}
+                <section class="section-heading">
+                    <div><h2>Your screening overview</h2><p>A summary of the results currently available in your account.</p></div>
+                </section>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-top"><div class="stat-icon">▤</div><span class="stat-chip">All time</span></div><div class="stat-value">{{ total }}</div><div class="stat-label">Total screenings</div></div>
+                    <div class="stat-card"><div class="stat-top"><div class="stat-icon">✓</div><span class="stat-chip">Results</span></div><div class="stat-value" style="color:var(--green)">{{ low_risk }}</div><div class="stat-label">Low risk results</div></div>
+                    <div class="stat-card"><div class="stat-top"><div class="stat-icon">◷</div><span class="stat-chip">Results</span></div><div class="stat-value" style="color:var(--amber)">{{ intermediate_risk }}</div><div class="stat-label">Intermediate risk results</div></div>
+                    <div class="stat-card"><div class="stat-top"><div class="stat-icon">!</div><span class="stat-chip">Results</span></div><div class="stat-value" style="color:var(--red)">{{ high_risk }}</div><div class="stat-label">High risk results</div></div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div>
+                        {% if latest %}
+                        <section class="panel" id="latest-result">
+                            <div class="panel-header"><div><div class="panel-title">Your latest screening result</div><div class="panel-subtitle">Recorded {{ latest.timestamp }}</div></div><span class="badge {{ latest.risk_level }}">{{ latest.risk_level }} RISK</span></div>
+                            <div class="panel-body">
+                                <div class="latest-result">
+                                    <div class="result-top">
+                                        <div><div class="result-date">SCREENING SUMMARY</div><div class="result-prediction">{{ latest.prediction }}</div><div class="result-id">Your most recent result available in MDSS</div></div>
+                                        <span class="badge {{ latest.prediction }}">{{ latest.prediction }}</span>
+                                    </div>
+                                    <div class="result-metrics">
+                                        <div><div class="metric-label">Model confidence</div><div class="metric-value">{{ latest.confidence }}%</div></div>
+                                        <div><div class="metric-label">Risk level</div><div class="metric-value">{{ latest.risk_level|title }}</div></div>
+                                        <div><div class="metric-label">Risk score</div><div class="metric-value">{{ latest.risk_score }}%</div></div>
+                                    </div>
+                                </div>
+                                <div style="margin-top:15px;color:var(--muted);font-size:11px;line-height:1.75">
+                                    <strong style="display:block;color:var(--navy);margin-bottom:5px">Understanding this result</strong>
+                                    {% if latest.risk_level == 'LOW' %}
+                                        This result is categorized as low risk by the system. Continue to follow screening advice from your healthcare provider; this result does not rule out disease.
+                                    {% elif latest.risk_level == 'INTERMEDIATE' %}
+                                        This result is categorized as intermediate risk by the system. Please discuss it with your healthcare provider, who can determine whether further assessment is appropriate.
+                                    {% else %}
+                                        This result is categorized as high risk by the system. Contact your healthcare provider promptly to discuss the result and appropriate next steps. An AI result alone is not a diagnosis.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </section>
+                        {% endif %}
+
+                        <section class="panel" id="screening-history" style="margin-top:18px">
+                            <div class="panel-header"><div><div class="panel-title">Screening history</div><div class="panel-subtitle">All screening results currently linked to your account</div></div><span class="stat-chip">{{ total }} record{% if total != 1 %}s{% endif %}</span></div>
+                            <div class="history-wrap">
+                                <table>
+                                    <thead><tr><th>Date</th><th>Result</th><th>Confidence</th><th>Risk level</th><th>Risk score</th></tr></thead>
+                                    <tbody>
+                                    {% for result in results %}
+                                        <tr>
+                                            <td>{{ result.timestamp }}</td>
+                                            <td><span class="badge {{ result.prediction }}">{{ result.prediction }}</span></td>
+                                            <td>{{ result.confidence }}%</td>
+                                            <td><span class="badge {{ result.risk_level }}">{{ result.risk_level|title }}</span></td>
+                                            <td>{{ result.risk_score }}%</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="side-stack">
+                        <section class="action-card"><div class="action-icon">♡</div><h3>Your health comes first</h3><p>Use this dashboard to review information shared with you. For advice about your screening or next steps, speak with your healthcare provider.</p><a class="btn" href="#patient-guidance">Patient guidance&nbsp; →</a></section>
+                        <section class="panel" id="patient-guidance">
+                            <div class="panel-header"><div><div class="panel-title">Helpful reminders</div><div class="panel-subtitle">For your next conversation with your provider</div></div></div>
+                            <div class="panel-body"><div class="guidance-list">
+                                <div class="guidance-item"><div class="guidance-bullet">✓</div><div><strong>Ask questions</strong><p>Ask your provider to explain your result and what it means for you.</p></div></div>
+                                <div class="guidance-item"><div class="guidance-bullet">✓</div><div><strong>Follow professional advice</strong><p>Your provider can recommend appropriate follow-up based on your full health history.</p></div></div>
+                                <div class="guidance-item"><div class="guidance-bullet">✓</div><div><strong>Keep your details private</strong><p>Sign out after using MDSS on a shared or public device.</p></div></div>
+                            </div></div>
+                        </section>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="disclaimer"><span style="font-size:17px">⚠</span><div><strong>Medical disclaimer:</strong> MDSS is an AI-assisted decision support system developed for research and educational purposes. Its outputs are not a confirmed diagnosis and do not replace professional medical advice, diagnosis, or treatment. Always discuss your results with a qualified healthcare provider.</div></div>
         </div>
-        {% endif %}
 
-        <!-- Screening History Table -->
-        <div class="history-card">
-            <div class="history-header">📅 Full Screening History</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Result</th>
-                        <th>Confidence</th>
-                        <th>Risk Level</th>
-                        <th>Risk Score</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for result in results %}
-                    <tr>
-                        <td>{{ result.timestamp }}</td>
-                        <td><span class="badge {{ result.prediction }}">{{ result.prediction }}</span></td>
-                        <td>{{ result.confidence }}%</td>
-                        <td><span class="badge {{ result.risk_level }}">{{ result.risk_level }}</span></td>
-                        <td>{{ result.risk_score }}%</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        {% endif %}
-
-        <!-- Disclaimer -->
-        <div class="disclaimer">
-            ⚠️ <strong>Medical Disclaimer:</strong> The information on this page is generated by an AI system and is intended for informational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of a qualified healthcare provider regarding your health.
-        </div>
-
-    </div>
-
-    <!-- FOOTER -->
-    <footer>
-        <p>MDSS — Hybrid AI Model for Breast Cancer Detection</p>
-        <p>Developed by Subgroup 3 · AAUA Faculty of Computing · CSC Department · Supervised by Dr. Ogbeide</p>
-    </footer>
-
+        <footer>MDSS — Hybrid AI Model for Breast Cancer Detection<br>Subgroup 3 · AAUA Faculty of Computing · CSC Department · Supervised by Dr. Ogbeide</footer>
+    </main>
+</div>
+<script>
+    (function () {
+        const toggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        if (!toggle || !sidebar) return;
+        toggle.addEventListener('click', function () {
+            const isOpen = sidebar.classList.toggle('open');
+            toggle.setAttribute('aria-expanded', String(isOpen));
+            toggle.setAttribute('aria-label', isOpen ? 'Close navigation' : 'Open navigation');
+        });
+        document.addEventListener('click', function (event) {
+            if (window.innerWidth <= 700 && sidebar.classList.contains('open') &&
+                !sidebar.contains(event.target) && !toggle.contains(event.target)) {
+                sidebar.classList.remove('open');
+                toggle.setAttribute('aria-expanded', 'false');
+                toggle.setAttribute('aria-label', 'Open navigation');
+            }
+        });
+        sidebar.querySelectorAll('a[href^="#"]').forEach(function (link) {
+            link.addEventListener('click', function () {
+                if (window.innerWidth <= 700) {
+                    sidebar.classList.remove('open');
+                    toggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+        });
+    })();
+</script>
 </body>
 </html>

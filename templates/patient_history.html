@@ -3,206 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient History - MDSS</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Patient History | MDSS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        .history-hero {
-            background: linear-gradient(135deg, #002060 0%, #7B2D8B 100%);
-            padding: 40px 32px;
+        :root {
+            --navy:#082F5B; --blue:#087CC1; --teal:#16A3B5; --pale:#EAF5FC;
+            --ink:#16324F; --muted:#718399; --line:#E4EDF5; --page:#F5F9FC;
+            --green:#15856B; --amber:#A66B08; --red:#C43D52;
+            --shadow:0 8px 28px rgba(8,47,91,.06);
         }
-        .history-hero h1 { color: white; font-size: 26px; font-weight: 700; }
-        .history-hero p { color: rgba(255,255,255,0.6); font-size: 14px; margin-top: 6px; }
-        .history-section { padding: 40px 0; }
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(4,1fr);
-            gap: 16px; margin-bottom: 32px;
-        }
-        .stat-card {
-            background: white; border-radius: 12px; padding: 20px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08); text-align: center;
-        }
-        .stat-num { font-size: 32px; font-weight: 700; color: #002060; }
-        .stat-label { font-size: 12px; color: #94a3b8; margin-top: 4px; }
-        .history-table {
-            background: white; border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08); overflow: hidden;
-        }
-        .history-table h3 {
-            padding: 20px 24px; font-size: 16px; font-weight: 700;
-            color: #002060; border-bottom: 2px solid #f0f4f8;
-        }
-        table { width: 100%; border-collapse: collapse; }
-        th {
-            background: #002060; color: white;
-            padding: 12px 16px; font-size: 12px; text-align: left;
-        }
-        td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #f0f4f8; color: #475569; }
-        tr:hover td { background: #f8fafc; }
-        .badge {
-            padding: 3px 10px; border-radius: 20px;
-            font-size: 11px; font-weight: 700;
-        }
-        .badge.MALIGNANT { background: #fee2e2; color: #C84B31; }
-        .badge.BENIGN { background: #dcfce7; color: #2C6E49; }
-        .badge.HIGH { background: #fee2e2; color: #C84B31; }
-        .badge.INTERMEDIATE { background: #fef9c3; color: #854d0e; }
-        .badge.LOW { background: #dcfce7; color: #2C6E49; }
-        .btn-back {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: #002060; color: white; padding: 10px 24px;
-            border-radius: 8px; text-decoration: none; font-size: 14px;
-            font-weight: 600; margin-bottom: 24px;
-        }
-        .risk-trend {
-            background: white; border-radius: 12px; padding: 24px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08); margin-bottom: 24px;
-        }
-        .risk-trend h3 {
-            font-size: 16px; font-weight: 700; color: #002060; margin-bottom: 16px;
-        }
-        .trend-bar {
-            display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
-        }
-        .trend-date { font-size: 12px; color: #94a3b8; min-width: 120px; }
-        .trend-track {
-            flex: 1; background: #f0f4f8; border-radius: 20px;
-            height: 12px; overflow: hidden;
-        }
-        .trend-fill { height: 100%; border-radius: 20px; transition: width 0.5s; }
-        .trend-score { font-size: 12px; font-weight: 600; color: #002060; min-width: 45px; }
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:Inter,sans-serif;background:var(--page);color:var(--ink);min-height:100vh}
+        a{color:inherit;text-decoration:none}
+        .navbar{height:76px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 5%;gap:18px}
+        .nav-logo{display:flex;align-items:center;gap:11px}
+        .logo-mark{width:43px;height:43px;background:#fff;border:1px solid #e5edf4;border-radius:10px;padding:4px;display:grid;place-items:center;overflow:hidden;flex-shrink:0}
+        .logo-mark img{width:100%;height:100%;object-fit:contain;display:block}
+        .logo-title{display:block;color:var(--navy);font-size:21px;font-weight:800;letter-spacing:.5px}
+        .logo-sub{display:block;color:var(--muted);font-size:9px;margin-top:3px}
+        .nav-right{display:flex;align-items:center;gap:12px}
+        .nav-link{font-size:12px;font-weight:700;color:var(--navy);padding:10px 13px;border-radius:8px}
+        .nav-link:hover{background:var(--pale)}
+        .nav-badge{background:#F0F6FA;color:#48647d;border:1px solid #e1ebf3;border-radius:8px;padding:9px 12px;font-size:11px;font-weight:700;max-width:190px;overflow-wrap:anywhere}
+        .nav-logout{background:var(--navy);color:#fff;padding:10px 14px;border-radius:8px;font-size:11px;font-weight:700}
+        .hero{background:linear-gradient(115deg,var(--navy),#0A527B 70%,#087E91);padding:34px 5%;color:white;position:relative;overflow:hidden}
+        .hero:after{content:"";position:absolute;width:230px;height:230px;border:34px solid rgba(255,255,255,.055);border-radius:50%;right:5%;top:-100px}
+        .hero-inner{max-width:1320px;margin:auto;position:relative;z-index:1}
+        .eyebrow{font-size:10px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#7BE0E4;margin-bottom:10px}
+        .hero h1{font-size:clamp(24px,3vw,32px);font-weight:800;letter-spacing:-.7px;line-height:1.2}
+        .hero p{font-size:12px;line-height:1.7;color:#C9DDEB;margin-top:9px}
+        .main{max-width:1320px;margin:0 auto;padding:28px 28px 42px}
+        .back-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
+        .back-btn{display:inline-flex;align-items:center;gap:8px;color:var(--navy);background:#fff;border:1px solid #dce7f0;border-radius:9px;padding:10px 14px;font-size:11px;font-weight:800}
+        .back-btn:hover{background:var(--pale)}
+        .secure-note{display:flex;align-items:center;gap:7px;color:#6a8195;font-size:10px}
+        .secure-dot{width:7px;height:7px;background:#20a582;border-radius:50%}
+        .patient-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:22px}
+        .meta-card,.stat-card,.panel{background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);min-width:0}
+        .meta-card{padding:17px 18px}
+        .meta-label{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.9px;font-weight:800;margin-bottom:8px}
+        .meta-value{display:block;color:var(--navy);font-size:13px;font-weight:700;overflow-wrap:anywhere}
+        .stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:22px}
+        .stat-card{padding:18px}
+        .stat-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+        .stat-icon{width:37px;height:37px;border-radius:10px;background:var(--pale);display:grid;place-items:center;color:var(--blue);font-size:18px}
+        .stat-num{font-size:27px;font-weight:800;color:var(--navy);margin-top:15px;letter-spacing:-.6px}
+        .stat-label{font-size:10px;color:var(--muted);margin-top:5px}
+        .section-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.8fr);gap:18px;align-items:start}
+        .panel{overflow:hidden;margin-bottom:18px}
+        .panel-head{padding:18px 20px;border-bottom:1px solid #edf2f6;display:flex;align-items:center;justify-content:space-between;gap:12px}
+        .panel-head h2{font-size:14px;color:var(--navy);font-weight:800}
+        .panel-head p{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.5}
+        .small-chip{font-size:9px;font-weight:800;background:#eef6fb;color:#52708a;padding:6px 9px;border-radius:20px;white-space:nowrap}
+        .panel-body{padding:20px}
+        .trend-intro{font-size:10px;color:var(--muted);line-height:1.7;margin-bottom:18px}
+        .trend-list{display:grid;gap:14px}
+        .trend-row{display:grid;grid-template-columns:105px minmax(70px,1fr) 45px auto;align-items:center;gap:10px}
+        .trend-date{font-size:10px;color:#61788e;white-space:nowrap}
+        .trend-track{height:9px;background:#edf3f7;border-radius:20px;overflow:hidden}
+        .trend-fill{height:100%;border-radius:20px}
+        .trend-score{font-size:10px;font-weight:800;color:var(--navy);text-align:right}
+        .badge{display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:20px;font-size:9px;font-weight:800;white-space:nowrap}
+        .badge.MALIGNANT,.badge.HIGH{background:#FDE9EC;color:var(--red)}
+        .badge.BENIGN,.badge.LOW{background:#E1F6EE;color:#13785E}
+        .badge.INTERMEDIATE{background:#FFF3D6;color:var(--amber)}
+        .table-wrap{overflow-x:auto}
+        table{width:100%;border-collapse:collapse;min-width:790px}
+        th{background:#F5F9FC;color:#6b8095;text-align:left;padding:13px 14px;font-size:9px;text-transform:uppercase;letter-spacing:.6px;font-weight:800}
+        td{padding:14px;border-top:1px solid #edf2f6;color:#405a72;font-size:10px;white-space:nowrap}
+        tbody tr:hover{background:#fbfdff}
+        .view-btn{display:inline-flex;align-items:center;gap:6px;background:var(--blue);color:#fff;padding:8px 10px;border-radius:7px;font-size:10px;font-weight:800}
+        .view-btn:hover{background:var(--navy)}
+        .table-note{padding:13px 20px;background:#fbfdff;border-bottom:1px solid #edf2f6;color:#6a8195;font-size:10px;line-height:1.7}
+        .empty-state{text-align:center;padding:42px 20px}
+        .empty-icon{width:62px;height:62px;border-radius:17px;background:var(--pale);color:var(--blue);display:grid;place-items:center;margin:0 auto 15px;font-size:28px}
+        .empty-state h3{font-size:15px;color:var(--navy);margin-bottom:8px}
+        .empty-state p{font-size:11px;line-height:1.7;color:var(--muted);max-width:420px;margin:auto}
+        .empty-action{display:inline-block;margin-top:17px;background:var(--blue);color:#fff;padding:10px 15px;border-radius:8px;font-size:11px;font-weight:800}
+        .side-panel{background:linear-gradient(145deg,var(--navy),#0A527B);border-radius:13px;padding:21px;color:white;margin-bottom:18px;position:relative;overflow:hidden}
+        .side-panel h3{font-size:14px;margin-bottom:8px;position:relative;z-index:1}
+        .side-panel p{font-size:10px;line-height:1.7;color:#c8deec;position:relative;z-index:1}
+        .side-panel .side-icon{font-size:22px;margin-bottom:14px;display:block}
+        .guidance{padding:19px}
+        .guidance-item{display:flex;gap:10px;margin-bottom:15px}
+        .guidance-item:last-child{margin-bottom:0}
+        .guidance-icon{width:27px;height:27px;flex-shrink:0;border-radius:8px;background:#e5f7f4;color:#168a7a;display:grid;place-items:center;font-size:12px}
+        .guidance-item strong{display:block;font-size:10px;color:var(--navy);margin-bottom:4px}
+        .guidance-item p{font-size:10px;line-height:1.6;color:var(--muted)}
+        .disclaimer{border:1px solid #f1ddaa;background:#fffaea;border-radius:10px;padding:14px 16px;display:flex;gap:10px;color:#7c5a17;font-size:10px;line-height:1.7;margin-top:4px}
+        .disclaimer strong{color:#69490a}
+        footer{text-align:center;padding:24px 15px 28px;color:#8a9baa;font-size:10px;line-height:1.8}
+        @media(max-width:1000px){.patient-meta,.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.section-grid{grid-template-columns:1fr}.side-column{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.side-panel,.side-column .panel{margin-bottom:0}}
+        @media(max-width:650px){.navbar{height:auto;min-height:70px;padding:12px 16px;align-items:flex-start}.logo-sub{max-width:140px;line-height:1.4}.nav-right{gap:6px;flex-wrap:wrap;justify-content:flex-end}.nav-link{display:none}.nav-badge{font-size:9px;padding:8px;max-width:115px}.nav-logout{font-size:10px;padding:9px}.hero{padding:28px 20px}.main{padding:20px 14px 30px}.back-row{align-items:flex-start;flex-direction:column}.patient-meta,.stats-grid{gap:10px}.meta-card,.stat-card{padding:14px}.meta-value{font-size:11px}.stat-num{font-size:24px}.panel-head,.panel-body{padding:15px}.trend-row{grid-template-columns:78px minmax(50px,1fr) 38px;gap:7px}.trend-row .badge{grid-column:2/4;justify-self:start}.side-column{grid-template-columns:1fr}.table-note{padding:12px 15px}}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
     </style>
+
+<style id="mdss-floating-chatbot-styles">
+/* Floating local MDSS assistant */
+  .mdss-chat-launcher{position:fixed;right:24px;bottom:22px;z-index:2147483000;width:60px;height:60px;border:3px solid #fff;border-radius:50%;background:#fff;padding:3px;box-shadow:0 10px 28px #082f5b45;cursor:pointer;display:grid;place-items:center;overflow:hidden;transition:transform .25s ease,box-shadow .25s ease}
+  .mdss-chat-launcher img{width:100%;height:100%;object-fit:contain;border-radius:50%;display:block}
+  .mdss-chat-launcher:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 14px 32px #082f5b55}
+  .mdss-chat-panel{position:fixed;right:24px;bottom:94px;z-index:2147483001;width:min(370px,calc(100vw - 28px));height:min(530px,calc(100vh - 125px));background:#fff;border:1px solid #dce8f1;border-radius:18px;box-shadow:0 18px 55px #082f5b30;display:flex;overflow:hidden;flex-direction:column;font-family:Inter,Arial,sans-serif;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(18px) scale(.96);transform-origin:bottom right;transition:opacity .24s ease,transform .28s cubic-bezier(.2,.8,.2,1),visibility .28s ease}
+  .mdss-chat-panel.open{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0) scale(1)}
+  .mdss-chat-head{background:linear-gradient(120deg,#082f5b,#087cc1);color:#fff;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .mdss-chat-brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .mdss-chat-logo{width:38px;height:38px;flex:0 0 38px;background:#fff;border-radius:50%;padding:3px;object-fit:contain}
+  .mdss-chat-brand-copy{min-width:0}
+  .mdss-chat-head{background:linear-gradient(120deg,#082f5b,#087cc1);color:#fff;padding:15px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .mdss-chat-head strong{font-size:14px;display:block}.mdss-chat-head small{display:block;font-size:10px;opacity:.85;margin-top:4px}
+  .mdss-chat-close{border:1px solid #ffffff55;background:#ffffff18;color:white;border-radius:8px;width:31px;height:31px;cursor:pointer;font-size:18px}
+  .mdss-chat-body{padding:14px;overflow-y:auto;flex:1;background:#f5f9fc;display:flex;flex-direction:column;gap:10px}
+  .mdss-chat-msg{max-width:91%;white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 12px;border-radius:12px;font-size:12px;line-height:1.55}
+  .mdss-chat-msg.bot{align-self:flex-start;background:#fff;color:#28445d;border:1px solid #e1ebf3;border-top-left-radius:4px}
+  .mdss-chat-msg.user{align-self:flex-end;background:#087cc1;color:#fff;border-top-right-radius:4px}
+  .mdss-chat-prompts{display:flex;flex-wrap:wrap;gap:6px}.mdss-chat-prompts button{border:1px solid #cfe2f0;background:#fff;color:#075b91;border-radius:20px;padding:7px 9px;font-size:10px;cursor:pointer}
+  .mdss-chat-form{display:flex;gap:8px;padding:11px;border-top:1px solid #e1ebf3;background:#fff}.mdss-chat-form input{min-width:0;flex:1;border:1px solid #d5e3ed;border-radius:10px;padding:11px;font:inherit;font-size:12px;outline:none}.mdss-chat-form input:focus{border-color:#087cc1}.mdss-chat-form button{border:0;border-radius:10px;background:#087cc1;color:#fff;font-size:12px;font-weight:700;padding:0 14px;cursor:pointer}.mdss-chat-note{padding:0 12px 10px;background:#fff;color:#7a8da0;font-size:9px;line-height:1.45}
+  @media(max-width:520px){.mdss-chat-launcher{right:16px;bottom:16px;width:54px;height:54px}.mdss-chat-panel{right:12px;bottom:80px;width:calc(100vw - 24px);height:min(560px,calc(100vh - 100px))}}
+  @media(prefers-reduced-motion:reduce){.mdss-chat-launcher,.mdss-chat-panel{transition:none!important}}
+</style>
 </head>
 <body>
-
-    <!-- NAVBAR -->
     <nav class="navbar">
-        <div class="nav-left">
-            <div class="nav-logo">
-                <div class="logo-icon">+</div>
-                <div>
-                    <span class="logo-title">MDSS</span>
-                    <span class="logo-sub">Medical Decision Support System</span>
-                </div>
-            </div>
-        </div>
+        <a class="nav-logo" href="/dashboard" aria-label="MDSS dashboard">
+            <div class="logo-mark"><img src="{{ url_for('static', filename='images/aaua-logo.png') }}" alt="Adekunle Ajasin University logo"></div>
+            <div><span class="logo-title">MDSS</span><span class="logo-sub">Medical Decision Support System</span></div>
+        </a>
         <div class="nav-right">
-            <a href="/dashboard" class="nav-link">📊 Dashboard</a>
+            <a href="/dashboard" class="nav-link">▦ Dashboard</a>
             <span class="nav-badge">{{ current_user.name }}</span>
-            <a href="/logout" class="nav-logout">Sign Out</a>
+            <a href="/logout" class="nav-logout">Sign out ↗</a>
         </div>
     </nav>
 
-    <!-- HERO -->
-    <section class="history-hero">
-        <div style="max-width:1100px;margin:0 auto;">
-            <h1>👤 Patient History — {{ patient.name }}</h1>
-            <p>{{ patient.email }} · {{ total }} screening{{ 's' if total != 1 else '' }} on record</p>
+    <header class="hero">
+        <div class="hero-inner">
+            <div class="eyebrow">Clinical workspace · Patient records</div>
+            <h1>Patient History</h1>
+            <p>Review screening records and saved AI-assisted findings for {{ patient.name }}.</p>
         </div>
-    </section>
+    </header>
 
-    <!-- CONTENT -->
-    <section class="history-section">
-        <div class="container">
+    <main class="main">
+        <div class="back-row">
+            <a href="/dashboard" class="back-btn">← &nbsp; Back to dashboard</a>
+            <span class="secure-note"><span class="secure-dot"></span> Confidential patient information</span>
+        </div>
 
-            <a href="/dashboard" class="btn-back">← Back to Dashboard</a>
+        <section class="patient-meta" aria-label="Patient details">
+            <div class="meta-card"><span class="meta-label">Patient name</span><span class="meta-value">{{ patient.name }}</span></div>
+            <div class="meta-card"><span class="meta-label">Email address</span><span class="meta-value">{{ patient.email }}</span></div>
+            <div class="meta-card"><span class="meta-label">Account type</span><span class="meta-value">{{ patient.role | title }}</span></div>
+            <div class="meta-card"><span class="meta-label">Recorded screenings</span><span class="meta-value">{{ total }}</span></div>
+        </section>
 
-            {% if total == 0 %}
-            <div style="text-align:center;padding:60px;background:white;border-radius:12px;">
-                <div style="font-size:64px;margin-bottom:16px;">🩻</div>
-                <h3 style="color:#002060;margin-bottom:8px;">No screenings yet</h3>
-                <p style="color:#94a3b8;">No analyses have been performed for this patient yet.</p>
-                <a href="/" style="display:inline-block;margin-top:20px;background:#002060;color:white;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Run Analysis for This Patient</a>
+        {% if total == 0 %}
+        <section class="panel">
+            <div class="empty-state">
+                <div class="empty-icon">▤</div>
+                <h3>No screenings recorded yet</h3>
+                <p>There are no saved analyses for this patient. When an assessment is completed and linked to this account, it will appear here.</p>
+                <a href="/" class="empty-action">Start a new analysis →</a>
             </div>
+        </section>
+        {% else %}
+        <section class="stats-grid" aria-label="Screening summary">
+            <div class="stat-card"><div class="stat-top"><div class="stat-icon">▤</div><span class="small-chip">All records</span></div><div class="stat-num">{{ total }}</div><div class="stat-label">Total screenings</div></div>
+            <div class="stat-card"><div class="stat-top"><div class="stat-icon">✓</div><span class="small-chip">Risk category</span></div><div class="stat-num" style="color:var(--green)">{{ low_risk }}</div><div class="stat-label">Low-risk results</div></div>
+            <div class="stat-card"><div class="stat-top"><div class="stat-icon">◷</div><span class="small-chip">Risk category</span></div><div class="stat-num" style="color:var(--amber)">{{ intermediate_risk }}</div><div class="stat-label">Intermediate-risk results</div></div>
+            <div class="stat-card"><div class="stat-top"><div class="stat-icon">!</div><span class="small-chip">Risk category</span></div><div class="stat-num" style="color:var(--red)">{{ high_risk }}</div><div class="stat-label">High-risk results</div></div>
+        </section>
 
-            {% else %}
-
-            <!-- Stats -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div style="font-size:28px;margin-bottom:8px;">🔬</div>
-                    <div class="stat-num">{{ total }}</div>
-                    <div class="stat-label">Total Screenings</div>
-                </div>
-                <div class="stat-card">
-                    <div style="font-size:28px;margin-bottom:8px;">🟢</div>
-                    <div class="stat-num" style="color:#2C6E49;">{{ low_risk }}</div>
-                    <div class="stat-label">Low Risk</div>
-                </div>
-                <div class="stat-card">
-                    <div style="font-size:28px;margin-bottom:8px;">🟡</div>
-                    <div class="stat-num" style="color:#F5A623;">{{ intermediate_risk }}</div>
-                    <div class="stat-label">Intermediate Risk</div>
-                </div>
-                <div class="stat-card">
-                    <div style="font-size:28px;margin-bottom:8px;">🔴</div>
-                    <div class="stat-num" style="color:#C84B31;">{{ high_risk }}</div>
-                    <div class="stat-label">High Risk</div>
-                </div>
-            </div>
-
-            <!-- Risk Score Trend -->
-            <div class="risk-trend">
-                <h3>📈 Risk Score Trend Over Time</h3>
-                {% for result in results | reverse %}
-                <div class="trend-bar">
-                    <div class="trend-date">{{ result.timestamp[:11] }}</div>
-                    <div class="trend-track">
-                        <div class="trend-fill" style="width:{{ result.risk_score }}%;background:{% if result.risk_level == 'HIGH' %}#C84B31{% elif result.risk_level == 'INTERMEDIATE' %}#F5A623{% else %}#2C6E49{% endif %};"></div>
-                    </div>
-                    <div class="trend-score">{{ result.risk_score }}%</div>
-                    <span class="badge {{ result.risk_level }}" style="margin-left:8px;">{{ result.risk_level }}</span>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- Full History Table -->
-            <div class="history-table">
-                <h3>Full Screening History</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Date</th>
-                            <th>Age</th>
-                            <th>BI-RADS</th>
-                            <th>Prediction</th>
-                            <th>Confidence</th>
-                            <th>Risk Level</th>
-                            <th>Risk Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for result in results %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ result.timestamp }}</td>
-                            <td>{{ result.age }} yrs</td>
-                            <td>Cat. {{ result.birads }}</td>
-                            <td><span class="badge {{ result.prediction }}">{{ result.prediction }}</span></td>
-                            <td>{{ result.confidence }}%</td>
-                            <td><span class="badge {{ result.risk_level }}">{{ result.risk_level }}</span></td>
-                            <td>{{ result.risk_score }}%</td>
-                        </tr>
+        <div class="section-grid">
+            <div class="main-column">
+                <section class="panel">
+                    <div class="panel-head"><div><h2>Risk index overview</h2><p>Saved MDSS risk index values by screening date</p></div><span class="small-chip">Historical view</span></div>
+                    <div class="panel-body">
+                        <p class="trend-intro">This visual summarizes recorded risk index values. It is not a calibrated clinical probability and should be interpreted alongside the full assessment by a qualified healthcare professional.</p>
+                        <div class="trend-list">
+                        {% for result in results | reverse %}
+                            <div class="trend-row">
+                                <div class="trend-date">{{ result.timestamp[:11] }}</div>
+                                <div class="trend-track"><div class="trend-fill" style="width:{{ result.risk_score }}%;background:{% if result.risk_level == 'HIGH' %}#C43D52{% elif result.risk_level == 'INTERMEDIATE' %}#D99A20{% else %}#15856B{% endif %};"></div></div>
+                                <div class="trend-score">{{ result.risk_score }}%</div>
+                                <span class="badge {{ result.risk_level }}">{{ result.risk_level }}</span>
+                            </div>
                         {% endfor %}
-                    </tbody>
-                </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-head"><div><h2>Full screening history</h2><p>Open a saved analysis to review the full result details</p></div><span class="small-chip">{{ total }} record{% if total != 1 %}s{% endif %}</span></div>
+                    <div class="table-note">Choose <strong>View analysis</strong> to reopen the saved result, including available mammogram explanations and SHAP feature contributions.</div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>#</th><th>Date</th><th>Age</th><th>BI-RADS</th><th>Prediction</th><th>Confidence</th><th>Risk level</th><th>Risk index</th><th>Action</th></tr></thead>
+                            <tbody>
+                            {% for result in results %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ result.timestamp }}</td>
+                                    <td>{{ result.age }} yrs</td>
+                                    <td>Cat. {{ result.birads }}</td>
+                                    <td><span class="badge {{ result.prediction }}">{{ result.prediction }}</span></td>
+                                    <td>{{ result.confidence }}%</td>
+                                    <td><span class="badge {{ result.risk_level }}">{{ result.risk_level }}</span></td>
+                                    <td>{{ result.risk_score }}%</td>
+                                    <td><a href="/analysis/{{ result.id }}" class="view-btn">View analysis →</a></td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
 
-            {% endif %}
-
+            <aside class="side-column">
+                <section class="side-panel"><span class="side-icon">✦</span><h3>Clinical context matters</h3><p>Risk index values and AI predictions are decision-support information. They should not be interpreted on their own or treated as a confirmed diagnosis.</p></section>
+                <section class="panel">
+                    <div class="panel-head"><div><h2>Review reminders</h2><p>For the clinical team</p></div></div>
+                    <div class="guidance">
+                        <div class="guidance-item"><div class="guidance-icon">✓</div><div><strong>Review the complete record</strong><p>Consider the original images, patient history, and other clinical information.</p></div></div>
+                        <div class="guidance-item"><div class="guidance-icon">✓</div><div><strong>Explain findings clearly</strong><p>Discuss results and any next steps with the patient using appropriate clinical judgement.</p></div></div>
+                        <div class="guidance-item"><div class="guidance-icon">✓</div><div><strong>Protect patient privacy</strong><p>Only access records needed for your authorized role and responsibilities.</p></div></div>
+                    </div>
+                </section>
+            </aside>
         </div>
-    </section>
+        {% endif %}
 
-    <!-- FOOTER -->
-    <footer class="footer">
-        <div class="footer-content">
-            <p>MDSS — Hybrid AI Model for Breast Cancer Detection</p>
-            <p>Developed by Subgroup 3 · AAUA Faculty of Computing · CSC Department · Supervised by Dr. Ogbeide</p>
-        </div>
-    </footer>
+        <div class="disclaimer"><span style="font-size:16px">⚠</span><div><strong>Medical disclaimer:</strong> MDSS is an AI-assisted decision support system developed for research and educational purposes. Predictions and risk index values are not a confirmed diagnosis and do not replace professional medical judgement, diagnostic assessment, or treatment decisions.</div></div>
+    </main>
 
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <footer>MDSS — Hybrid AI Model for Breast Cancer Detection<br>Subgroup 3 · AAUA Faculty of Computing · CSC Department · Supervised by Dr. Ogbeide</footer>
 
+<!-- Floating local-knowledge chatbot: visible to authenticated users only -->
+{% if current_user.is_authenticated %}
+<button class="mdss-chat-launcher" id="mdssChatLauncher" type="button" aria-label="Open MDSS assistant" aria-expanded="false"><img src="{{ url_for('static', filename='images/aaua-logo.png') }}" alt="AAUA school logo"></button>
+<section class="mdss-chat-panel" id="mdssChatPanel" aria-label="MDSS assistant" aria-hidden="true" inert>
+  <header class="mdss-chat-head"><div class="mdss-chat-brand"><img class="mdss-chat-logo" src="{{ url_for('static', filename='images/aaua-logo.png') }}" alt="AAUA school logo"><div class="mdss-chat-brand-copy"><strong>MDSS Assistant</strong><small>Local knowledge-based help · Educational use</small></div></div><button class="mdss-chat-close" id="mdssChatClose" type="button" aria-label="Close assistant">×</button></header>
+  <div class="mdss-chat-body" id="mdssChatBody" aria-live="polite">
+    <div class="mdss-chat-msg bot">Hello! I can explain MDSS concepts such as BI-RADS, Grad-CAM, SHAP, model confidence, and the screening workflow. I cannot diagnose or replace a healthcare professional.</div>
+    <div class="mdss-chat-prompts"><button type="button" data-question="What is BI-RADS?">What is BI-RADS?</button><button type="button" data-question="Explain Grad-CAM">Grad-CAM</button><button type="button" data-question="What is SHAP?">SHAP</button><button type="button" data-question="What does confidence mean?">Confidence score</button></div>
+  </div>
+  <form class="mdss-chat-form" id="mdssChatForm"><input id="mdssChatInput" type="text" maxlength="1000" placeholder="Ask an educational question…" autocomplete="off" aria-label="Message the MDSS assistant" required><button type="submit" id="mdssChatSend">Send</button></form>
+  <div class="mdss-chat-note">Educational information only. Avoid entering names, contact details, or other identifying medical information. Not for emergency advice.</div>
+</section>
+<script>
+(function(){
+  const launcher=document.getElementById('mdssChatLauncher');
+  const panel=document.getElementById('mdssChatPanel');
+  const closeBtn=document.getElementById('mdssChatClose');
+  const body=document.getElementById('mdssChatBody');
+  const form=document.getElementById('mdssChatForm');
+  const input=document.getElementById('mdssChatInput');
+  const send=document.getElementById('mdssChatSend');
+  if(!launcher||!panel||!body||!form||!input||!send)return;
+  const history=[];
+  function toggle(open){panel.classList.toggle('open',open);panel.setAttribute('aria-hidden',String(!open));panel.toggleAttribute('inert',!open);launcher.setAttribute('aria-expanded',String(open));if(open)setTimeout(()=>input.focus(),180)}
+  function addMessage(text,role){const el=document.createElement('div');el.className='mdss-chat-msg '+role;el.textContent=text;body.appendChild(el);body.scrollTop=body.scrollHeight;return el}
+  launcher.addEventListener('click',()=>toggle(!panel.classList.contains('open')));
+  closeBtn.addEventListener('click',()=>toggle(false));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('open'))toggle(false)});
+  body.querySelectorAll('[data-question]').forEach(btn=>btn.addEventListener('click',()=>{input.value=btn.dataset.question;form.requestSubmit()}));
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();const message=input.value.trim();if(!message)return;
+    addMessage(message,'user');history.push({role:'user',content:message});input.value='';send.disabled=true;send.textContent='…';
+    const pending=addMessage('Thinking…','bot');
+    try{
+      const response=await fetch('{{ url_for("chatbot_api") }}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history})});
+      const data=await response.json();if(!response.ok)throw new Error(data.error||'The assistant could not respond.');
+      const reply=data.reply||data.response||'I could not find an answer to that question.';pending.textContent=reply;history.push({role:'assistant',content:reply});
+    }catch(err){pending.textContent='Sorry, I could not connect to the local assistant. Please try again.';}
+    finally{send.disabled=false;send.textContent='Send';body.scrollTop=body.scrollHeight;input.focus()}
+  });
+})();
+</script>
+{% endif %}
 </body>
 </html>

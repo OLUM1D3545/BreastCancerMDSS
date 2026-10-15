@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}BreastCancerMDSS{% endblock %}</title>
+  {% block head %}{% endblock %}
+  <style>
+    :root {
+      --bcmdss-navy: #082f5b;
+      --bcmdss-blue: #087cc1;
+      --bcmdss-teal: #16a3b5;
+      --bcmdss-pale: #eaf5fc;
+      --bcmdss-ink: #20344b;
+      --bcmdss-muted: #66788a;
+      --bcmdss-line: #dce7ef;
+    }
+
+    /* Shared floating BreastCancerMDSS assistant */
+    #bcmdss-chat-launcher {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 9998;
+      width: 62px;
+      height: 62px;
+      border: 0;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--bcmdss-blue), var(--bcmdss-teal));
+      color: #fff;
+      box-shadow: 0 10px 28px #082f5b40;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 27px;
+      transition: transform .18s ease;
+    }
+    #bcmdss-chat-launcher:hover { transform: translateY(-2px); }
+    #bcmdss-chat-launcher:focus-visible,
+    #bcmdss-chat-close:focus-visible {
+      outline: 3px solid #ffde59;
+      outline-offset: 3px;
+    }
+
+    #bcmdss-chat-window {
+      position: fixed;
+      right: 22px;
+      bottom: 96px;
+      z-index: 9999;
+      width: min(390px, calc(100vw - 28px));
+      height: min(570px, calc(100vh - 125px));
+      min-height: 360px;
+      background: #fff;
+      border: 1px solid var(--bcmdss-line);
+      border-radius: 18px;
+      box-shadow: 0 18px 60px #082f5b35;
+      display: none;
+      overflow: hidden;
+      flex-direction: column;
+      color: var(--bcmdss-ink);
+      font: 14px/1.5 Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #bcmdss-chat-window.is-open { display: flex; }
+
+    .bcmdss-float-head {
+      background: var(--bcmdss-navy);
+      color: #fff;
+      padding: 13px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .bcmdss-mini-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: #ffffff1c;
+      display: grid;
+      place-items: center;
+      font-size: 19px;
+      flex-shrink: 0;
+    }
+    .bcmdss-head-copy { flex: 1; min-width: 0; }
+    .bcmdss-head-copy strong { display: block; font-size: 14px; }
+    .bcmdss-head-copy small { display: block; color: #c8e8f7; font-size: 11px; }
+    #bcmdss-chat-close {
+      border: 1px solid #ffffff55;
+      background: transparent;
+      color: #fff;
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    #bcmdss-float-messages {
+      padding: 14px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #fff;
+    }
+    .bcmdss-float-bubble {
+      max-width: 90%;
+      padding: 10px 12px;
+      border-radius: 13px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .bcmdss-float-bubble.bot {
+      background: #f0f6fa;
+      border: 1px solid #e3edf4;
+      align-self: flex-start;
+    }
+    .bcmdss-float-bubble.user {
+      background: var(--bcmdss-blue);
+      color: #fff;
+      align-self: flex-end;
+    }
+    .bcmdss-float-quick {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 0 12px 10px;
+    }
+    .bcmdss-float-quick button {
+      background: #fff;
+      border: 1px solid #cddfeb;
+      color: var(--bcmdss-blue);
+      border-radius: 16px;
+      padding: 6px 8px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .bcmdss-float-composer {
+      border-top: 1px solid var(--bcmdss-line);
+      padding: 10px;
+      display: flex;
+      gap: 7px;
+      background: #fcfdff;
+    }
+    .bcmdss-float-composer textarea {
+      flex: 1;
+      min-width: 0;
+      resize: none;
+      min-height: 42px;
+      max-height: 100px;
+      border: 1px solid #cbd9e4;
+      border-radius: 10px;
+      padding: 10px;
+      font: 13px/1.4 Inter, system-ui, sans-serif;
+      outline: none;
+    }
+    .bcmdss-float-composer textarea:focus {
+      border-color: var(--bcmdss-blue);
+      box-shadow: 0 0 0 3px #087cc11a;
+    }
+    .bcmdss-float-composer button {
+      border: 0;
+      border-radius: 10px;
+      background: var(--bcmdss-blue);
+      color: #fff;
+      font-weight: 700;
+      padding: 0 13px;
+      cursor: pointer;
+    }
+    .bcmdss-float-composer button:disabled { opacity: .55; cursor: wait; }
+
+    @media (max-width: 480px) {
+      #bcmdss-chat-launcher { right: 15px; bottom: 15px; width: 56px; height: 56px; }
+      #bcmdss-chat-window {
+        right: 10px;
+        bottom: 80px;
+        width: calc(100vw - 20px);
+        height: min(570px, calc(100vh - 100px));
+        min-height: 340px;
+      }
+    }
+  </style>
+</head>
+<body>
+  {% block content %}{% endblock %}
+
+  {% if current_user.is_authenticated %}
+  <button id="bcmdss-chat-launcher"
+          type="button"
+          aria-label="Open BreastCancerMDSS assistant"
+          aria-controls="bcmdss-chat-window"
+          aria-expanded="false"
+          title="Ask BreastCancerMDSS">✦</button>
+
+  <section id="bcmdss-chat-window"
+           role="dialog"
+           aria-label="BreastCancerMDSS AI Assistant"
+           aria-modal="false"
+           aria-hidden="true">
+    <div class="bcmdss-float-head">
+      <div class="bcmdss-mini-avatar" aria-hidden="true">✦</div>
+      <div class="bcmdss-head-copy">
+        <strong>BreastCancerMDSS Assistant</strong>
+        <small>Local knowledge-based help</small>
+      </div>
+      <button id="bcmdss-chat-close" type="button" aria-label="Minimize assistant">×</button>
+    </div>
+
+    <div id="bcmdss-float-messages" aria-live="polite">
+      <div class="bcmdss-float-bubble bot">Hello! Ask me about BI-RADS, VGG16 + SVM, Grad-CAM, SHAP, or general breast-health information. I cannot diagnose or replace a healthcare professional. Please do not share identifying patient information.</div>
+    </div>
+
+    <div class="bcmdss-float-quick" aria-label="Suggested questions">
+      <button type="button" data-bcmdss-prompt="What is BI-RADS?">BI-RADS</button>
+      <button type="button" data-bcmdss-prompt="What do Grad-CAM and SHAP explain?">Grad-CAM / SHAP</button>
+      <button type="button" data-bcmdss-prompt="What does an AI confidence score mean?">Confidence score</button>
+    </div>
+
+    <form id="bcmdss-float-form" class="bcmdss-float-composer">
+      <textarea id="bcmdss-float-input" maxlength="1500" rows="2" placeholder="Ask a question…" aria-label="Ask the assistant" required></textarea>
+      <button id="bcmdss-float-send" type="submit" aria-label="Send message">➤</button>
+    </form>
+  </section>
+
+  <script>
+  (() => {
+    const launcher = document.getElementById('bcmdss-chat-launcher');
+    const chatWindow = document.getElementById('bcmdss-chat-window');
+    const closeButton = document.getElementById('bcmdss-chat-close');
+    const form = document.getElementById('bcmdss-float-form');
+    const input = document.getElementById('bcmdss-float-input');
+    const send = document.getElementById('bcmdss-float-send');
+    const messages = document.getElementById('bcmdss-float-messages');
+    const history = [];
+
+    function setOpen(open) {
+      chatWindow.classList.toggle('is-open', open);
+      chatWindow.setAttribute('aria-hidden', String(!open));
+      launcher.setAttribute('aria-expanded', String(open));
+      launcher.setAttribute('aria-label', open ? 'Minimize BreastCancerMDSS assistant' : 'Open BreastCancerMDSS assistant');
+      if (open) input.focus();
+    }
+
+    function addBubble(text, who) {
+      const bubble = document.createElement('div');
+      bubble.className = 'bcmdss-float-bubble ' + (who === 'user' ? 'user' : 'bot');
+      bubble.textContent = text;
+      messages.appendChild(bubble);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    async function sendMessage(text) {
+      const clean = (text || '').trim();
+      if (!clean || send.disabled) return;
+
+      addBubble(clean, 'user');
+      history.push({ role: 'user', content: clean });
+      input.value = '';
+      send.disabled = true;
+      send.textContent = '…';
+
+      try {
+        const response = await fetch('{{ url_for("chatbot_api") }}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: history.slice(-8) })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'The assistant could not respond. Please try again.');
+        const reply = String(data.reply || 'I could not generate a response. Please try again.');
+        addBubble(reply, 'assistant');
+        history.push({ role: 'assistant', content: reply });
+      } catch (error) {
+        addBubble(error.message || 'The assistant is temporarily unavailable. Please try again later.', 'assistant');
+        history.pop();
+      } finally {
+        send.disabled = false;
+        send.textContent = '➤';
+        input.focus();
+      }
+    }
+
+    launcher.addEventListener('click', () => setOpen(!chatWindow.classList.contains('is-open')));
+    closeButton.addEventListener('click', () => { setOpen(false); launcher.focus(); });
+    form.addEventListener('submit', event => { event.preventDefault(); sendMessage(input.value); });
+    document.querySelectorAll('[data-bcmdss-prompt]').forEach(button => {
+      button.addEventListener('click', () => sendMessage(button.dataset.bcmdssPrompt));
+    });
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        form.requestSubmit();
+      }
+    });
+  })();
+  </script>
+  {% endif %}
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>
