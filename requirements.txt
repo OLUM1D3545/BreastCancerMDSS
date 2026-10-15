@@ -12,3 +12,4 @@ flask-login
 flask-bcrypt
 Authlib
 python-dotenv
+requests
