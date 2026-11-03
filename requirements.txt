@@ -3,7 +3,7 @@ scikit-learn
 shap
 matplotlib
 pillow
-numpy
+numpy<2.0
 pandas
 gunicorn
 fpdf2
@@ -13,3 +13,4 @@ flask-bcrypt
 Authlib
 python-dotenv
 requests
+tensorflow==2.15.1
