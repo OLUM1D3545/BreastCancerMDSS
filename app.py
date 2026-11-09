@@ -1617,6 +1617,81 @@ def register():
 
     return render_template("register.html", error=None)
 
+
+# ══════════════════════════════════════════════
+# REGISTER A PATIENT (PROFESSIONAL WORKFLOW)
+# ══════════════════════════════════════════════
+@app.route("/register-patient", methods=["GET", "POST"])
+@login_required
+@radiologist_required
+def register_patient():
+    """Allow an authenticated clinical professional to create a patient account."""
+    error = None
+
+    if request.method == "POST":
+        name = (request.form.get("name") or "").strip()
+        email = (request.form.get("email") or "").strip().lower()
+        password = request.form.get("password") or ""
+        confirm_password = request.form.get("confirm_password") or ""
+
+        if not name or not email or not password or not confirm_password:
+            error = "Please complete all required fields."
+        elif len(name) > 100:
+            error = "The patient's name must be 100 characters or fewer."
+        elif len(email) > 120:
+            error = "The email address is too long."
+        elif len(password) < 8:
+            error = "The password must contain at least 8 characters."
+        elif password != confirm_password:
+            error = "The passwords do not match."
+        elif User.query.filter_by(email=email).first():
+            error = "An account with this email already exists. Please check the email address."
+
+        if error:
+            return render_template(
+                "register_patient.html",
+                error=error,
+                name=name,
+                email=email,
+                user=current_user
+            ), 400
+
+        password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+        patient = User(
+            name=name,
+            email=email,
+            password=password_hash,
+            role="patient",
+            created_at=datetime.now().strftime("%d %B %Y")
+        )
+
+        try:
+            db.session.add(patient)
+            db.session.commit()
+            flash(
+                f"Patient account created for {patient.name}. You can now select them for analysis.",
+                "success"
+            )
+            return redirect(url_for("index"))
+        except Exception:
+            db.session.rollback()
+            app.logger.exception("Professional-created patient account failed")
+            return render_template(
+                "register_patient.html",
+                error="We could not create the patient account. Please try again.",
+                name=name,
+                email=email,
+                user=current_user
+            ), 500
+
+    return render_template(
+        "register_patient.html",
+        error=None,
+        name="",
+        email="",
+        user=current_user
+    )
+
 # ══════════════════════════════════════════════
 # LOGOUT ROUTE
 # ══════════════════════════════════════════════
