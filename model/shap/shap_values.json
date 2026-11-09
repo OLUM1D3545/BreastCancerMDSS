@@ -1,0 +1,11 @@
+{
+    "Breast Density": -0.014522818249986988,
+    "Assessment": -0.009037798946886689,
+    "Subtlety": -0.00880425774537713,
+    "Abnormality: Calcification": 0.014532727519214346,
+    "Abnormality: Mass": 0.01451379403120994,
+    "Image View: CC": -0.011903843821901424,
+    "Image View: MLO": -0.011939440605394529,
+    "Breast Side: Left": 0.007472698280752477,
+    "Breast Side: Right": 0.007442559530395349
+}
