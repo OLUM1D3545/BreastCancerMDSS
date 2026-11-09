@@ -39,10 +39,7 @@ import matplotlib.cm as cm
 from fpdf import FPDF
 import json
 import joblib
-import shap
-import tensorflow as tf
-from tensorflow.keras.applications import VGG16
-from tensorflow.keras.applications.vgg16 import preprocess_input
+import threading
 # ══════════════════════════════════════════════
 # CREATE FLASK APP
 # ══════════════════════════════════════════════
@@ -118,32 +115,65 @@ except Exception as e:
     model_config = {}
     shap_background = None
     print(f"WARNING: AI model could not be loaded: {e}")
-# Load VGG16 once and use it as the frozen image feature extractor.
-try:
-    vgg16_base = VGG16(
-        weights="imagenet",
-        include_top=False,
-        input_shape=(224, 224, 3)
-    )
-    vgg16_base.trainable = False
-    vgg16_feature_extractor = tf.keras.Sequential([
-        vgg16_base,
-        tf.keras.layers.GlobalAveragePooling2D()
-    ])
-    # Grad-CAM uses the final convolutional feature map from VGG16.
-    gradcam_model = tf.keras.Model(
-        inputs=vgg16_base.input,
-        outputs=[
-            vgg16_base.get_layer("block5_conv3").output,
-            vgg16_base.output
-        ]
-    )
-    print("VGG16 feature extractor loaded successfully.")
-except Exception as e:
-    vgg16_base = None
-    vgg16_feature_extractor = None
-    gradcam_model = None
-    print(f"WARNING: VGG16 could not be loaded: {e}")
+# TensorFlow/VGG16 are deliberately lazy-loaded. This keeps the Flask web
+# process lighter during startup on memory-limited hosting platforms.
+_tf = None
+_vgg16_base = None
+_vgg16_feature_extractor = None
+_gradcam_model = None
+_ai_model_lock = threading.Lock()
+
+
+def get_tensorflow():
+    """Import TensorFlow only when image inference or Grad-CAM is requested."""
+    global _tf
+    if _tf is None:
+        # Limit CPU thread pools to reduce overhead on small instances.
+        os.environ.setdefault("TF_NUM_INTRAOP_THREADS", "1")
+        os.environ.setdefault("TF_NUM_INTEROP_THREADS", "1")
+        os.environ.setdefault("OMP_NUM_THREADS", "1")
+        import tensorflow as tensorflow_module
+        _tf = tensorflow_module
+        print("TensorFlow loaded on demand.")
+    return _tf
+
+
+def get_vgg16_components():
+    """Build and cache one shared VGG16 backbone for inference and Grad-CAM."""
+    global _vgg16_base, _vgg16_feature_extractor, _gradcam_model
+    if _vgg16_base is not None:
+        return _tf, _vgg16_feature_extractor, _gradcam_model
+
+    with _ai_model_lock:
+        if _vgg16_base is not None:
+            return _tf, _vgg16_feature_extractor, _gradcam_model
+
+        tensorflow_module = get_tensorflow()
+        from tensorflow.keras.applications import VGG16 as VGG16Model
+
+        base_model = VGG16Model(
+            weights="imagenet",
+            include_top=False,
+            input_shape=(224, 224, 3)
+        )
+        base_model.trainable = False
+        feature_extractor = tensorflow_module.keras.Sequential([
+            base_model,
+            tensorflow_module.keras.layers.GlobalAveragePooling2D()
+        ])
+        # Both models share the same base model; VGG16 weights are not loaded twice.
+        gradcam = tensorflow_module.keras.Model(
+            inputs=base_model.input,
+            outputs=[
+                base_model.get_layer("block5_conv3").output,
+                base_model.output
+            ]
+        )
+        _vgg16_base = base_model
+        _vgg16_feature_extractor = feature_extractor
+        _gradcam_model = gradcam
+        print("VGG16 feature extractor loaded on demand.")
+        return _tf, _vgg16_feature_extractor, _gradcam_model
 # ══════════════════════════════════════════════
 # DATABASE AND LOGIN CONFIGURATION
 # ══════════════════════════════════════════════
@@ -345,13 +375,14 @@ def allowed_file(filename):
         in ALLOWED_EXTENSIONS
     )
 def load_and_preprocess_image(image_path):
-    """Load an image using the same VGG16 preprocessing used during training."""
+    """Load and preprocess an image using the original VGG16 preprocessing."""
+    tensorflow_module = get_tensorflow()
+    from tensorflow.keras.applications.vgg16 import preprocess_input
+
     img = Image.open(image_path).convert("RGB")
     img = img.resize((224, 224))
     img_array = np.array(img, dtype=np.float32)
-    model_input = preprocess_input(
-        np.expand_dims(img_array, axis=0)
-    )
+    model_input = preprocess_input(np.expand_dims(img_array, axis=0))
     return model_input, img
 def predict_with_model(
     img_array,
@@ -363,15 +394,9 @@ def predict_with_model(
             "The trained hybrid AI model is not loaded. "
             "Check the model folder and Python dependencies."
         )
-    if vgg16_feature_extractor is None:
-        raise RuntimeError(
-            "The VGG16 feature extractor is not loaded."
-        )
+    _, feature_extractor, _ = get_vgg16_components()
     # 1. Extract the 512 image features used during training.
-    image_features = vgg16_feature_extractor.predict(
-        img_array,
-        verbose=0
-    )
+    image_features = feature_extractor.predict(img_array, verbose=0)
     # 2. Build the exact clinical feature tables used during training.
     #    DataFrames preserve the feature names expected by the fitted
     #    StandardScaler and OneHotEncoder, avoiding feature-name warnings.
@@ -477,10 +502,8 @@ def generate_gradcam_heatmap(
     VGG16 image representation rather than the non-differentiable SVM decision
     itself.
     """
-    if gradcam_model is None:
-        raise RuntimeError(
-            "Grad-CAM model is not loaded."
-        )
+    tensorflow_module, _, gradcam_model = get_vgg16_components()
+    from tensorflow.keras.applications.vgg16 import preprocess_input
     # Use the exact VGG16 preprocessing used by the feature extractor.
     img = Image.open(
         image_path
@@ -494,14 +517,14 @@ def generate_gradcam_heatmap(
         np.expand_dims(img_array, axis=0)
     )
     # Forward pass and gradient calculation.
-    with tf.GradientTape() as tape:
+    with tensorflow_module.GradientTape() as tape:
         conv_outputs, vgg_outputs = gradcam_model(
             model_input,
             training=False
         )
         # VGG16 itself is being used as a feature extractor. We explain the
         # strength of the extracted representation at the final conv layer.
-        target_output = tf.reduce_mean(
+        target_output = tensorflow_module.reduce_mean(
             vgg_outputs
         )
     gradients = tape.gradient(
@@ -515,26 +538,26 @@ def generate_gradcam_heatmap(
     conv_outputs = conv_outputs[0]
     gradients = gradients[0]
     # Global-average-pool the gradients to obtain channel weights.
-    weights = tf.reduce_mean(
+    weights = tensorflow_module.reduce_mean(
         gradients,
         axis=(0, 1)
     )
-    heatmap = tf.reduce_sum(
+    heatmap = tensorflow_module.reduce_sum(
         conv_outputs * weights,
         axis=-1
     )
     # ReLU and normalization.
-    heatmap = tf.maximum(
+    heatmap = tensorflow_module.maximum(
         heatmap,
         0
     )
-    heatmap_max = tf.reduce_max(
+    heatmap_max = tensorflow_module.reduce_max(
         heatmap
     )
-    heatmap = tf.where(
+    heatmap = tensorflow_module.where(
         heatmap_max > 0,
         heatmap / heatmap_max,
-        tf.zeros_like(heatmap)
+        tensorflow_module.zeros_like(heatmap)
     )
     heatmap = heatmap.numpy()
     # Resize the 14x14 VGG16 activation map to the mammogram size.
@@ -584,6 +607,8 @@ def compute_shap_values(
     malignant probability, while Grad-CAM separately explains the image
     representation.
     """
+    import shap
+
     if shap_background is None:
         raise RuntimeError(
             "Real SHAP background is not loaded. Add "
