@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#082F5B">
+    <title>Register Patient | BreastCancerMDSS</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin:0; min-height:100vh; padding:32px 16px; display:flex; align-items:center; justify-content:center; background:#f3f7fb; color:#17324d; font-family:Arial,Helvetica,sans-serif; }
+        .panel { width:100%; max-width:540px; padding:34px; background:#fff; border:1px solid #e1eaf2; border-radius:18px; box-shadow:0 14px 40px rgba(8,47,91,.09); }
+        .brand { display:flex; align-items:center; gap:12px; margin-bottom:26px; }
+        .brand img { width:48px; height:48px; object-fit:contain; }
+        .brand strong { color:#082f5b; font-size:19px; }
+        .eyebrow { color:#028090; font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; }
+        h1 { margin:8px 0 10px; color:#082f5b; font-size:27px; }
+        .intro { margin:0 0 24px; color:#64748b; line-height:1.6; font-size:14px; }
+        label { display:block; margin:17px 0 7px; color:#29445e; font-size:14px; font-weight:700; }
+        input { width:100%; min-height:48px; padding:12px 14px; border:1px solid #cfdae6; border-radius:10px; background:#fff; color:#17324d; font-size:16px; }
+        input:focus { outline:3px solid rgba(2,128,144,.14); border-color:#028090; }
+        .hint { margin:6px 0 0; color:#718096; font-size:12px; }
+        .error { padding:12px 14px; border-radius:9px; margin:16px 0; background:#fff1f0; color:#a33128; font-size:14px; }
+        .actions { display:flex; gap:12px; margin-top:25px; flex-wrap:wrap; }
+        .btn { min-height:47px; padding:12px 18px; border-radius:9px; border:0; font-size:14px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
+        .primary { background:#028090; color:#fff; flex:1; }
+        .secondary { background:#edf3f8; color:#29445e; }
+        .notice { margin-top:20px; padding:12px 14px; background:#eef8fa; color:#315b68; border-radius:9px; font-size:12px; line-height:1.55; }
+        @media(max-width:520px) { .panel { padding:24px 19px; } h1 { font-size:23px; } }
+    </style>
+</head>
+<body>
+    <main class="panel">
+        <div class="brand">
+            <img src="{{ url_for('static', filename='images/aaua-logo.png') }}" alt="AAUA logo">
+            <strong>BreastCancerMDSS</strong>
+        </div>
+        <div class="eyebrow">Clinical professional workspace</div>
+        <h1>Register a new patient</h1>
+        <p class="intro">Create a patient account so their profile can be selected and linked to mammogram analyses. You will remain signed in to your professional account.</p>
+        {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+        <form method="POST" action="{{ url_for('register_patient') }}">
+            <label for="name">Patient's full name</label>
+            <input type="text" id="name" name="name" value="{{ name or '' }}" maxlength="100" autocomplete="name" required>
+            <label for="email">Patient's email address</label>
+            <input type="email" id="email" name="email" value="{{ email or '' }}" maxlength="120" autocomplete="email" required>
+            <p class="hint">Use an email address the patient can access. It will be their account login.</p>
+            <label for="password">Set a temporary password</label>
+            <input type="password" id="password" name="password" minlength="8" autocomplete="new-password" required>
+            <p class="hint">Use at least 8 characters. Share the login details with the patient securely.</p>
+            <label for="confirm_password">Confirm password</label>
+            <input type="password" id="confirm_password" name="confirm_password" minlength="8" autocomplete="new-password" required>
+            <div class="notice">This form creates a patient account only. It does not create a professional account or change your current sign-in session.</div>
+            <div class="actions">
+                <button class="btn primary" type="submit">Create patient account</button>
+                <a class="btn secondary" href="{{ url_for('index') }}">Cancel</a>
+            </div>
+        </form>
+    </main>
+</body>
+</html>
